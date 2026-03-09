@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { ToastKind, EndpointKey } from '../types';
+import { Activity, ArrowRight, Info } from 'lucide-react';
+import type { ToastKind, EndpointKey, MirrorState } from '../types';
 
 const CKAN_BASE = 'https://data.gov.lv/dati/api/action';
 const RESOURCE_ID = '25e80bf3-f107-4ab4-89ef-251b5b9374e9';
@@ -15,11 +16,12 @@ function highlightJson(json: string): string {
 
 interface Props {
   addToast: (kind: ToastKind, message: string, durationMs?: number) => void;
+  mirror?: MirrorState | null;
 }
 
 type ViewMode = 'pretty' | 'raw';
 
-export default function ApiTester({ addToast }: Props) {
+export default function ApiTester({ addToast, mirror }: Props) {
   const [endpoint, setEndpoint] = useState<EndpointKey>('search-q');
   const [q, setQ]               = useState('SIA');
   const [limit, setLimit]       = useState('10');
@@ -163,13 +165,73 @@ export default function ApiTester({ addToast }: Props) {
         </p>
       </div>
 
+      {/* ── Live feed from LookupForm ───────────────────────────────────────── */}
+      <div className={`mb-5 rounded-lg border overflow-hidden transition-colors ${
+        mirror ? 'border-[#2ea043]' : 'border-[#30363d]'
+      }`}>
+        <div className={`flex items-center gap-2 px-3 py-2 border-b ${
+          mirror ? 'border-[#2ea043] bg-[#0d2114]' : 'border-[#30363d] bg-[#0d1117]'
+        }`}>
+          <Activity
+            size={12}
+            className={mirror?.loading ? 'text-[#3fb950] animate-pulse' : mirror ? 'text-[#3fb950]' : 'text-[#484f58]'}
+          />
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">
+            Live feed — Meklētājs
+          </span>
+          {mirror?.loading && (
+            <span className="ml-auto flex items-center gap-1.5 text-[10px] text-[#3fb950] font-semibold">
+              <span className="live-dot" /> Fetching…
+            </span>
+          )}
+          {mirror && !mirror.loading && (
+            <span className="ml-auto flex items-center gap-1.5 text-[10px] text-[#3fb950]">
+              <span className="live-dot live-dot--idle" />
+              {mirror.statusText}
+              {mirror.elapsed && <span className="text-[#8b949e] ml-1">{mirror.elapsed}</span>}
+            </span>
+          )}
+        </div>
+
+        {mirror ? (
+          <>
+            {/* URL row */}
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-[#30363d] bg-[#0d1117] overflow-hidden">
+              <span className="method-badge method-get shrink-0">GET</span>
+              <code className="text-[11px] font-mono text-[#79c0ff] truncate">{mirror.url}</code>
+              {mirror.total !== null && (
+                <span className="ml-auto shrink-0 text-[10px] text-[#3fb950] font-mono">{mirror.total.toLocaleString()} results</span>
+              )}
+            </div>
+            {/* Response */}
+            {mirror.loading ? (
+              <div className="px-3 py-4 text-[11px] text-[#8b949e] flex items-center gap-2">
+                <Activity size={12} className="animate-pulse text-[#3fb950]" />
+                Waiting for response…
+              </div>
+            ) : mirror.rawJson ? (
+              <pre className="code-pre max-h-52 overflow-auto panel-scroll text-[10.5px] leading-relaxed">
+                <span dangerouslySetInnerHTML={{ __html: mirror.responseHtml }} />
+              </pre>
+            ) : (
+              <div className="px-3 py-3 text-[11px] text-[#f85149]">{mirror.statusText}</div>
+            )}
+          </>
+        ) : (
+          <div className="px-3 py-4 text-[11px] text-[#484f58] flex items-center gap-2">
+            <ArrowRight size={12} />
+            Type in the search form on the right to watch live requests appear here.
+          </div>
+        )}
+      </div>
+
       <div className="callout callout--info">
-        <span className="callout-icon">💡</span>
+        <Info size={14} className="callout-icon shrink-0 mt-0.5" />
         <div>
-          <strong>Tiešs savienojums:</strong> šie pieprasījumi iet tieši uz{' '}
+          <strong>Direct connection:</strong> these requests go straight to{' '}
           <code className="font-mono text-[#a5d6ff] bg-[#1f2a3f] px-1 rounded text-[11px]">data.gov.lv</code>,
-          nevis caur mūsu serveri. GET pieprasījumi darbojas pārlūkā;
-          POST (SQL) var tikt bloķēts ar CORS — izmanto mūsu <code className="font-mono text-[#a5d6ff] bg-[#1f2a3f] px-1 rounded text-[11px]">/api/sql</code> labajā panelī tam.
+          bypassing our server. GET works in-browser;
+          POST (SQL) may be blocked by CORS — use our <code className="font-mono text-[#a5d6ff] bg-[#1f2a3f] px-1 rounded text-[11px]">/api/sql</code> proxy for that.
         </div>
       </div>
 

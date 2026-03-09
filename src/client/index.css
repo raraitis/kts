@@ -6,6 +6,10 @@
 @keyframes toast-in  { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes toast-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
 @keyframes spin-ring { to { transform: rotate(360deg); } }
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.35; transform: scale(0.75); }
+}
 
 @layer components {
 
@@ -73,6 +77,11 @@
   .callout--warning { @apply bg-[#2d2011] border border-[#4a3018] text-[#e3b341]; }
   .callout--light   { @apply bg-blue-50 border border-blue-200 text-blue-700; }
   .callout-icon { @apply text-sm flex-shrink-0 mt-0.5; }
+  .live-dot {
+    @apply inline-block w-1.5 h-1.5 rounded-full bg-[#3fb950];
+    animation: live-pulse 1s ease-in-out infinite;
+  }
+  .live-dot--idle { animation: none; opacity: 0.75; }
 
   /* ── Mode toggle (right panel) ──────────────────────────────────────────────── */
   .mode-toggle { @apply flex rounded border border-[#d1d9e0] overflow-hidden mb-4; }

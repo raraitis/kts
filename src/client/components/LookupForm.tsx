@@ -1,11 +1,22 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { Company, SearchResponse, ToastKind } from '../types';
+import { Hash, CaseSensitive } from 'lucide-react';
+import type { Company, SearchResponse, ToastKind, MirrorState } from '../types';
 import CompanyCard from './CompanyCard';
 
 type SearchMode = 'name' | 'regcode';
 
+function highlightJson(json: string): string {
+  return json
+    .replace(/(".*?")\s*:/g, '<span class="json-key">$1</span>:')
+    .replace(/:\s*(".*?")/g, ': <span class="json-string">$1</span>')
+    .replace(/:\s*(\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
+    .replace(/:\s*(true|false)/g, ': <span class="json-bool">$1</span>')
+    .replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
+}
+
 interface Props {
   addToast: (kind: ToastKind, message: string, durationMs?: number) => void;
+  setMirror: (state: MirrorState | null) => void;
 }
 
 function highlight(text: string, query: string): string {
@@ -22,7 +33,7 @@ function debounce<T extends (...args: Parameters<T>) => void>(fn: T, delay: numb
   };
 }
 
-export default function LookupForm({ addToast }: Props) {
+export default function LookupForm({ addToast, setMirror }: Props) {
   const [mode, setMode]           = useState<SearchMode>('name');
   const [inputValue, setInputValue] = useState('');
   const [hint, setHint]           = useState('Ievadi vismaz 2 simbolus, lai sāktu meklēšanu.');
@@ -39,15 +50,23 @@ export default function LookupForm({ addToast }: Props) {
       mode === 'name'
         ? `q=${encodeURIComponent(value)}&limit=12`
         : `regcode=${encodeURIComponent(value)}&limit=12`;
+    const url = `/api/search?${param}`;
 
+    // Push loading state to mirror immediately
+    setMirror({ mode, query: value, url, loading: true, rawJson: '', responseHtml: '', statusText: '', statusOk: true, elapsed: '', total: null });
+
+    const t0 = performance.now();
     try {
-      const res = await fetch(`/api/search?${param}`);
+      const res = await fetch(url);
+      const elapsed = `${Math.round(performance.now() - t0)} ms`;
       if (res.status === 429) {
         addToast('warning', 'Pārāk daudz pieprasījumu. Lūdzu uzgaidi minūti.');
         setHint('Pieprasījumu limits sasniegts. Mēģini vēlāk.');
+        setMirror({ mode, query: value, url, loading: false, rawJson: '', responseHtml: '', statusText: '429 Too Many Requests', statusOk: false, elapsed, total: null });
         return;
       }
       const data = (await res.json()) as SearchResponse;
+      const rawJson = JSON.stringify(data, null, 2);
       const records = data.records ?? [];
       setResults(records);
       setShowList(true);
@@ -57,10 +76,21 @@ export default function LookupForm({ addToast }: Props) {
       } else {
         setHint(`Atrasti ${data.total.toLocaleString('lv-LV')} ieraksti — rāda ${records.length}`);
       }
+      setMirror({
+        mode, query: value, url, loading: false,
+        rawJson,
+        responseHtml: highlightJson(rawJson),
+        statusText: `${res.status} ${res.statusText}`,
+        statusOk: res.ok,
+        elapsed,
+        total: data.total ?? null,
+      });
     } catch {
+      const elapsed = `${Math.round(performance.now() - t0)} ms`;
       setHint('Kļūda ielādējot rezultātus.');
       addToast('error', 'Neizdevās ielādēt meklēšanas rezultātus.');
       setShowList(false);
+      setMirror({ mode, query: value, url, loading: false, rawJson: '', responseHtml: '', statusText: 'Network error', statusOk: false, elapsed, total: null });
     } finally {
       setLoading(false);
     }
@@ -74,6 +104,7 @@ export default function LookupForm({ addToast }: Props) {
     if (value.trim().length < 2) {
       setShowList(false);
       setHint('Ievadi vismaz 2 simbolus, lai sāktu meklēšanu.');
+      setMirror(null);
       return;
     }
     setHint('Meklē…');
@@ -115,6 +146,7 @@ export default function LookupForm({ addToast }: Props) {
     setInputValue('');
     setShowList(false);
     setHint('Ievadi vismaz 2 simbolus, lai sāktu meklēšanu.');
+    setMirror(null);
   }
 
   return (
@@ -132,16 +164,16 @@ export default function LookupForm({ addToast }: Props) {
         {/* Mode toggle */}
         <div className="mode-toggle">
           <button
-            className={`mode-btn ${mode === 'name' ? 'mode-btn--active' : ''}`}
+            className={`mode-btn flex items-center justify-center gap-1.5 ${mode === 'name' ? 'mode-btn--active' : ''}`}
             onClick={() => changeMode('name')}
           >
-            🔤 Pēc nosaukuma
+            <CaseSensitive size={15} /> Pēc nosaukuma
           </button>
           <button
-            className={`mode-btn ${mode === 'regcode' ? 'mode-btn--active' : ''}`}
+            className={`mode-btn flex items-center justify-center gap-1.5 ${mode === 'regcode' ? 'mode-btn--active' : ''}`}
             onClick={() => changeMode('regcode')}
           >
-            🔢 Pēc reģ. numura
+            <Hash size={13} /> Pēc reģ. numura
           </button>
         </div>
 

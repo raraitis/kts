@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useToast } from './hooks/useToast';
-import type { Page } from './types';
+import type { Page, MirrorState } from './types';
+import { Terminal, Search } from 'lucide-react';
 import ToastContainer from './components/ToastContainer';
 import Header from './components/Header';
 import ApiTester from './components/ApiTester';
@@ -11,6 +12,7 @@ export default function App() {
   const { toasts, addToast, removeToast } = useToast();
   const [page, setPage] = useState<Page>('tool');
   const [mobileTab, setMobileTab] = useState<'api' | 'lookup'>('lookup');
+  const [mirror, setMirror] = useState<MirrorState | null>(null);
 
   return (
     <div className="bg-[#0f1117] text-[#e6edf3] flex flex-col min-h-screen font-sans">
@@ -23,23 +25,24 @@ export default function App() {
           <div className="flex md:hidden shrink-0 bg-[#161b22] border-b border-[#30363d]">
             <button
               onClick={() => setMobileTab('api')}
-              className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
                 mobileTab === 'api'
                   ? 'text-[#e6edf3] border-[#58a6ff]'
                   : 'text-[#8b949e] border-transparent'
               }`}
             >
-              🛠 API Testeris
+              <Terminal size={14} /> API Testeris
+              {mirror && <span className="w-1.5 h-1.5 rounded-full bg-[#3fb950] ml-1 live-dot" />}
             </button>
             <button
               onClick={() => setMobileTab('lookup')}
-              className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
                 mobileTab === 'lookup'
                   ? 'text-[#e6edf3] border-[#58a6ff]'
                   : 'text-[#8b949e] border-transparent'
               }`}
             >
-              🔍 Meklētājs
+              <Search size={14} /> Meklētājs
             </button>
           </div>
 
@@ -47,12 +50,12 @@ export default function App() {
             <div className={`${
               mobileTab !== 'api' ? 'hidden' : 'flex flex-col flex-1 min-h-0'
             } md:flex md:flex-col md:min-h-0`}>
-              <ApiTester addToast={addToast} />
+              <ApiTester addToast={addToast} mirror={mirror} />
             </div>
             <div className={`${
               mobileTab !== 'lookup' ? 'hidden' : 'flex flex-col flex-1 min-h-0'
             } md:flex md:flex-col md:min-h-0`}>
-              <LookupForm addToast={addToast} />
+              <LookupForm addToast={addToast} setMirror={setMirror} />
             </div>
           </main>
         </>

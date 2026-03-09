@@ -51,3 +51,16 @@ export interface Toast {
 export type Page = 'tool' | 'docs';
 
 export type EndpointKey = 'search-q' | 'search-reg' | 'sql';
+
+export interface MirrorState {
+  mode: 'name' | 'regcode';
+  query: string;
+  url: string;
+  loading: boolean;
+  rawJson: string;
+  responseHtml: string;
+  statusText: string;
+  statusOk: boolean;
+  elapsed: string;
+  total: number | null;
+}
