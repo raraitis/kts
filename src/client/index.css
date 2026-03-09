@@ -2,16 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Keyframes (must live outside @layer to work in all browsers) ─────────── */
+/* ─── Keyframes ─────────────────────────────────────────────────────────────── */
 @keyframes toast-in  { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes toast-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
 @keyframes spin-ring { to { transform: rotate(360deg); } }
-
-/* ─── Page layout (IDs used as CSS hooks to avoid display-vs-hidden fight) ─── */
-#page-tool { display: grid; grid-template-columns: 1fr 1fr; flex: 1; overflow: hidden; }
-#page-docs { display: flex; flex: 1; }
-#page-tool.hidden,
-#page-docs.hidden { display: none !important; }
 
 @layer components {
 
@@ -40,7 +34,7 @@
     animation: spin-ring 0.65s linear infinite;
   }
   .btn-spinner    { @apply w-4 h-4; }
-  .lookup-spinner { @apply w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2; }
+  .lookup-spinner { @apply w-4 h-4; }
 
   /* ── Method badges ──────────────────────────────────────────────────────────── */
   .method-badge {
@@ -60,9 +54,6 @@
   .tab-label { font-family: theme('fontFamily.mono'); @apply font-medium text-[11px] text-[#e6edf3]; }
   .tab-param { @apply text-[#58a6ff]; }
   .tab-hint  { @apply text-[10px] text-[#8b949e] mt-0.5; }
-
-  /* ── Params panel hidden state ──────────────────────────────────────────────── */
-  .params-panel--hidden { @apply hidden; }
 
   /* ── View toggle (pretty / raw) ─────────────────────────────────────────────── */
   .view-toggle { @apply flex rounded overflow-hidden border border-[#30363d]; }
@@ -153,8 +144,7 @@
     @apply block px-3 py-1.5 text-sm text-[#656d76] rounded no-underline
            hover:text-[#24292f] hover:bg-gray-100 transition-colors;
   }
-  .docs-nav-link--active,
-  .docs-nav-link:target { @apply text-[#0969da] bg-blue-50 font-medium; }
+  .docs-nav-link--active { @apply text-[#0969da] bg-blue-50 font-medium; }
 
   /* ── Code blocks in docs ────────────────────────────────────────────────────── */
   .code-pre {

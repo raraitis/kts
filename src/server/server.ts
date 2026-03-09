@@ -19,7 +19,7 @@ app.use(
         defaultSrc: ["'self'"],
         scriptSrc:  ["'self'"],
         styleSrc:   ["'self'", "'unsafe-inline'"],
-        connectSrc: ["'self'"],
+        connectSrc: ["'self'", 'https://data.gov.lv'],
         imgSrc:     ["'self'", 'data:'],
       },
     },
@@ -49,7 +49,7 @@ const sqlLimiter = rateLimit({
 
 app.use('/api/', globalLimiter);
 
-app.use(express.static(path.join(__dirname, '../src/public')));
+app.use(express.static(path.join(__dirname, 'client')));
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -234,7 +234,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 
 // ─── Catch-all → SPA ─────────────────────────────────────────────────────────
 app.get('*', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, '../src/public/index.html'));
+  res.sendFile(path.join(__dirname, 'client/index.html'));
 });
 
 app.listen(PORT, () => {
