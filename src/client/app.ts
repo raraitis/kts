@@ -540,10 +540,62 @@ class LookupForm {
   }
 }
 
+// ─── Page navigation ──────────────────────────────────────────────────────────
+
+/**
+ * Wires the header nav buttons to toggle between the tool page and the
+ * documentation page.  Uses the `hidden` class (display:none) which is
+ * overridden by the #page-* ID rules defined in input.css so the correct
+ * display mode (grid / flex) is restored when `hidden` is removed.
+ */
+function initNavigation(): void {
+  const navBtns  = document.querySelectorAll<HTMLButtonElement>('.nav-btn');
+  const pageTool = document.getElementById('page-tool')!;
+  const pageDocs = document.getElementById('page-docs')!;
+
+  navBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset['page'];
+
+      // Toggle active state on nav buttons
+      navBtns.forEach(b => b.classList.toggle('nav-btn--active', b === btn));
+
+      // Show / hide pages
+      pageTool.classList.toggle('hidden', target !== 'tool');
+      pageDocs.classList.toggle('hidden', target !== 'docs');
+    });
+  });
+}
+
+// ─── Docs copy buttons ─────────────────────────────────────────────────────────
+
+/**
+ * Each code block in the docs page has a "Kopēt" button with
+ * `data-copy="<id>"`.  The raw text is read from `#snippet-<id>`.
+ */
+function initDocsCopyButtons(): void {
+  document.querySelectorAll<HTMLButtonElement>('button[data-copy]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id  = btn.dataset['copy']!;
+      const pre = document.getElementById(`snippet-${id}`);
+      if (!pre) return;
+
+      const text = pre.textContent ?? '';
+      void navigator.clipboard.writeText(text.trim()).then(() => {
+        btn.textContent = '✓ Nokopēts';
+        setTimeout(() => (btn.textContent = 'Kopēt'), 1800);
+        showToast('success', 'Kods nokopēts starpliktuvē.');
+      });
+    });
+  });
+}
+
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   new ApiTester();
   new LookupForm();
+  initNavigation();
+  initDocsCopyButtons();
   showToast('info', 'Laipni lūgti! Sāc rakstīt labajā pusē vai izmēģini API testerī kreisajā pusē.', 5000);
 });

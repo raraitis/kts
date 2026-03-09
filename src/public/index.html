@@ -6,50 +6,64 @@
   <title>LV Uzņēmumu Reģistrs</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="bg-[#0f1117] text-[#e6edf3] flex flex-col min-h-screen font-sans">
 
-  <!-- Toast notifications appear here (injected by JS) -->
-  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+  <!-- Toast notifications (injected by JS) -->
+  <div id="toast-container"
+       class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"
+       aria-live="polite"></div>
 
-  <!-- ═══ App header ═══════════════════════════════════════════════════════ -->
-  <header class="app-header">
-    <span class="header-logo">⚡</span>
-    <div class="header-text">
-      <span class="header-title">LV Uzņēmumu Reģistrs</span>
-      <span class="header-sub">data.gov.lv API izpētes rīks</span>
+  <!-- ═══════════════════════ HEADER ═══════════════════════════════════════════ -->
+  <header class="h-14 flex items-center gap-2.5 px-6 bg-[#161b22] border-b border-[#30363d] shrink-0">
+    <span class="text-xl">⚡</span>
+
+    <div class="flex flex-col gap-px">
+      <span class="text-sm font-bold text-[#e6edf3]">LV Uzņēmumu Reģistrs</span>
+      <span class="text-[11px] text-[#8b949e]">data.gov.lv API izpētes rīks</span>
     </div>
 
-    <!-- Main navigation: switch between the tool and the documentation -->
-    <nav class="app-nav">
+    <!-- Page navigation: Tool ↔ Docs -->
+    <nav class="flex gap-1 ml-4">
       <button class="nav-btn nav-btn--active" data-page="tool">🛠 Rīks</button>
-      <button class="nav-btn" data-page="docs">📄 Dokumentācija</button>
+      <button class="nav-btn"                 data-page="docs">📄 Dokumentācija</button>
     </nav>
 
-    <a class="header-badge" href="https://github.com/raraitis/kts" target="_blank" rel="noopener">GitHub ↗</a>
+    <a class="ml-auto text-[11.5px] px-2.5 py-1 border border-[#30363d] rounded-full
+              text-[#58a6ff] no-underline hover:bg-[#58a6ff]/10 hover:border-[#58a6ff] transition-colors"
+       href="https://github.com/raraitis/kts" target="_blank" rel="noopener">
+      GitHub ↗
+    </a>
   </header>
 
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       PAGE: TOOL  (the default split view)
-  ═══════════════════════════════════════════════════════════════════════════ -->
-  <main id="page-tool" class="split">
+  <!-- ═══════════════════════ PAGE: TOOL ═══════════════════════════════════════ -->
+  <!-- Layout via #page-tool in input.css (grid 2-col, flex-1) -->
+  <main id="page-tool">
 
-    <!-- ──────────────── LEFT: API TESTER ──────────────────────────────── -->
-    <section class="panel panel--api">
-      <div class="panel-head">
-        <h2>API Testeris</h2>
-        <p class="panel-desc">Šeit tu vari tieši izsaukt API galapunktus (endpoints) un redzēt ko tie atgriež. Izvēlies metodi, aizpildi parametrus un nospied <strong>Nosūtīt pieprasījumu</strong>.</p>
+    <!-- ─────────────────────── LEFT: API TESTER ──────────────────────────── -->
+    <section class="flex flex-col overflow-y-auto px-6 py-8 bg-[#161b22]
+                    border-r border-[#30363d] panel-scroll">
+
+      <div class="mb-5">
+        <h2 class="text-[17px] font-bold mb-2">API Testeris</h2>
+        <p class="text-sm text-[#8b949e] leading-relaxed">
+          Šeit tu vari tieši izsaukt API galapunktus un redzēt ko tie atgriež.
+          Izvēlies metodi, aizpildi parametrus un nospied
+          <strong class="text-[#e6edf3] font-semibold">Nosūtīt pieprasījumu</strong>.
+        </p>
       </div>
 
       <div class="callout callout--info">
         <span class="callout-icon">💡</span>
         <div>
-          <strong>Kas ir API?</strong> API (Application Programming Interface) ir veids, kā viena programma var lūgt datus no citas.
-          Piemēram, mūsu mājaslapa lūdz uzņēmumu datus no <code>data.gov.lv</code> un parāda tos saprotamā veidā.
+          <strong>Kas ir API?</strong> Veids, kā viena programma lūdz datus no citas.
+          Šī mājaslapa lūdz uzņēmumu datus no
+          <code class="font-mono text-[#a5d6ff] bg-[#1f2a3f] px-1 rounded text-[11px]">data.gov.lv</code>
+          un parāda tos saprotamā veidā.
         </div>
       </div>
 
       <!-- Endpoint selector tabs -->
-      <div class="endpoint-tabs">
+      <div class="flex flex-col gap-2 mb-4">
         <button class="tab-btn tab-btn--active" data-endpoint="search-q">
           <span class="method-badge method-get">GET</span>
           <span class="tab-label">/api/search<span class="tab-param">?q=…</span></span>
@@ -67,257 +81,335 @@
         </button>
       </div>
 
-      <!-- Parameters: search by name -->
-      <div id="params-search-q" class="params-panel">
+      <!-- ── Params: search by name ───────────────────────────────────────── -->
+      <div id="params-search-q" class="params-panel mb-4">
         <div class="callout callout--tip">
           <span class="callout-icon">📖</span>
-          <div><strong>GET</strong> nozīmē, ka mēs <em>lasām</em> datus. Parametri tiek pievienoti URL aiz <code>?</code> zīmes.
-          Šis pieprasījums veic pilna teksta meklēšanu — atrod uzņēmumus, kuros jebkurā laukā ir ievadītais vārds.</div>
+          <div>
+            <strong>GET</strong> — lasām datus. Parametri pievienoti URL aiz
+            <code class="font-mono bg-[#1a3a22] px-1 rounded">?</code>.
+            Pilna teksta meklēšana visos laukos.
+          </div>
         </div>
-        <div class="params-grid">
-          <div class="param-row">
-            <label for="param-q">q <span class="required" title="Obligāts lauks">*</span>
-              <span class="param-hint">meklēšanas frāze</span>
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="flex items-center gap-1.5 text-xs text-[#8b949e]" for="param-q">
+              q <span class="text-[#f85149]" title="Obligāts">*</span>
+              <span class="text-[10px] border border-[#30363d] rounded px-1.5 py-px">meklēšanas frāze</span>
             </label>
-            <input id="param-q" type="text" placeholder='piem. "SIA Latvijas"' />
+            <input id="param-q" type="text" placeholder='piem. "SIA Latvijas"'
+                   class="bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-sm
+                          text-[#e6edf3] font-mono focus:outline-none focus:border-[#58a6ff]
+                          transition-colors placeholder:text-[#484f58]" />
           </div>
-          <div class="param-row">
-            <label for="param-limit">limit
-              <span class="param-hint">rezultātu skaits (max 50)</span>
-            </label>
-            <input id="param-limit" type="number" value="10" min="1" max="50" />
-          </div>
-          <div class="param-row">
-            <label for="param-offset">offset
-              <span class="param-hint">izlaist N ierakstus</span>
-            </label>
-            <input id="param-offset" type="number" value="0" min="0" />
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-[#8b949e]" for="param-limit">
+                limit <span class="text-[10px] opacity-70">(max 50)</span>
+              </label>
+              <input id="param-limit" type="number" value="10" min="1" max="50"
+                     class="bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-sm
+                            text-[#e6edf3] font-mono focus:outline-none focus:border-[#58a6ff] transition-colors" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-[#8b949e]" for="param-offset">
+                offset <span class="text-[10px] opacity-70">(lapošanai)</span>
+              </label>
+              <input id="param-offset" type="number" value="0" min="0"
+                     class="bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-sm
+                            text-[#e6edf3] font-mono focus:outline-none focus:border-[#58a6ff] transition-colors" />
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Parameters: search by registration code -->
-      <div id="params-search-reg" class="params-panel params-panel--hidden">
+      <!-- ── Params: search by regcode ────────────────────────────────────── -->
+      <div id="params-search-reg" class="params-panel params-panel--hidden mb-4">
         <div class="callout callout--tip">
           <span class="callout-icon">📖</span>
-          <div><strong>Precīza meklēšana</strong> pēc <code>regcode</code> lauka — dod precīzu atbilstību.
-          Reģistrācijas numurs Latvijā ir 11 cipari.</div>
-        </div>
-        <div class="params-grid">
-          <div class="param-row">
-            <label for="param-regcode">regcode <span class="required" title="Obligāts lauks">*</span>
-              <span class="param-hint">reģistrācijas numurs</span>
-            </label>
-            <input id="param-regcode" type="text" placeholder="piem. 40003009497" />
+          <div>
+            <strong>Precīza meklēšana</strong> pēc
+            <code class="font-mono bg-[#1a3a22] px-1 rounded">regcode</code>.
+            Latvijas reģistrācijas numurs ir 11 cipari.
           </div>
-          <div class="param-row">
-            <label for="param-reg-limit">limit
-              <span class="param-hint">rezultātu skaits (max 50)</span>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="flex items-center gap-1.5 text-xs text-[#8b949e]" for="param-regcode">
+              regcode <span class="text-[#f85149]">*</span>
+              <span class="text-[10px] border border-[#30363d] rounded px-1.5 py-px">reģistrācijas numurs</span>
             </label>
-            <input id="param-reg-limit" type="number" value="5" min="1" max="50" />
+            <input id="param-regcode" type="text" placeholder="piem. 40003009497"
+                   class="bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-sm
+                          text-[#e6edf3] font-mono focus:outline-none focus:border-[#58a6ff]
+                          transition-colors placeholder:text-[#484f58]" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-[#8b949e]" for="param-reg-limit">
+              limit <span class="text-[10px] opacity-70">(max 50)</span>
+            </label>
+            <input id="param-reg-limit" type="number" value="5" min="1" max="50"
+                   class="bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-sm
+                          text-[#e6edf3] font-mono focus:outline-none focus:border-[#58a6ff] transition-colors" />
           </div>
         </div>
       </div>
 
-      <!-- Parameters: raw SQL query -->
-      <div id="params-sql" class="params-panel params-panel--hidden">
+      <!-- ── Params: raw SQL ───────────────────────────────────────────────── -->
+      <div id="params-sql" class="params-panel params-panel--hidden mb-4">
         <div class="callout callout--warning">
           <span class="callout-icon">⚠️</span>
-          <div><strong>SQL (Structured Query Language)</strong> ļauj uzdot sarežģītākus jautājumus datubāzei.
-          Tabulas nosaukums ir resursa ID. Atļauti tikai <code>SELECT</code> vaicājumi.</div>
+          <div>
+            <strong>SQL</strong> — sarežģītāki vaicājumi datubāzei. Tabulas nosaukums ir resursa
+            ID pēdiņās. Atļauti tikai
+            <code class="font-mono bg-[#4a3018] px-1 rounded">SELECT</code> vaicājumi.
+          </div>
         </div>
-        <div class="param-row param-row--vertical">
-          <label for="param-sql">sql <span class="required">*</span>
-            <span class="param-hint">SELECT vaicājums</span>
+        <div class="flex flex-col gap-1">
+          <label class="flex items-center gap-1.5 text-xs text-[#8b949e]" for="param-sql">
+            sql <span class="text-[#f85149]">*</span>
+            <span class="text-[10px] border border-[#30363d] rounded px-1.5 py-px">SELECT vaicājums</span>
           </label>
-          <textarea id="param-sql" rows="6" spellcheck="false">SELECT regcode, name, address, registered
+          <textarea id="param-sql" rows="6" spellcheck="false"
+                    class="bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-sm
+                           text-[#e6edf3] font-mono focus:outline-none focus:border-[#58a6ff]
+                           transition-colors resize-y">SELECT regcode, name, address, registered
 FROM "25e80bf3-f107-4ab4-89ef-251b5b9374e9"
 WHERE name ILIKE '%latvijas%'
 LIMIT 10</textarea>
         </div>
       </div>
 
-      <!-- Live URL preview shown while filling in params -->
-      <div class="request-preview">
-        <div class="request-preview-top">
-          <span class="request-preview-label">Pieprasījuma URL</span>
-          <button id="copy-url-btn" class="copy-btn" title="Kopēt URL">Kopēt</button>
+      <!-- Live URL preview -->
+      <div class="mb-3 rounded-lg border border-[#30363d] bg-[#0d1117] overflow-hidden">
+        <div class="flex items-center justify-between px-3 py-2 border-b border-[#30363d]">
+          <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">
+            Pieprasījuma URL
+          </span>
+          <button id="copy-url-btn" class="copy-btn">Kopēt</button>
         </div>
-        <code id="request-url-display" class="request-url">—</code>
+        <code id="request-url-display"
+              class="block px-3 py-2.5 text-[11.5px] font-mono text-[#79c0ff] break-all leading-relaxed">
+          —
+        </code>
       </div>
 
-      <button id="send-btn" class="send-btn">
+      <!-- Send button -->
+      <button id="send-btn" class="send-btn mb-5">
         <span id="send-btn-text">Nosūtīt pieprasījumu</span>
         <span id="send-btn-spinner" class="btn-spinner hidden"></span>
       </button>
 
-      <!-- JSON response viewer -->
-      <div class="response-box">
-        <div class="response-header">
-          <span class="response-header-label">Atbilde</span>
-          <span id="response-status" class="response-status"></span>
-          <span id="response-time"   class="response-time"></span>
-          <div class="response-header-actions">
-            <!-- Toggle between syntax-highlighted and plain JSON -->
+      <!-- Response viewer -->
+      <div class="flex flex-col rounded-lg border border-[#30363d] overflow-hidden flex-1 min-h-[260px]">
+        <div class="flex items-center gap-2 px-3 py-2 bg-[#0d1117] border-b border-[#30363d] flex-wrap">
+          <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">Atbilde</span>
+          <span id="response-status" class="response-status ml-1"></span>
+          <span id="response-time"   class="text-[11px] text-[#8b949e] font-mono"></span>
+          <div class="flex items-center gap-2 ml-auto">
             <div class="view-toggle" id="api-view-toggle">
               <button class="view-btn view-btn--active" data-view="pretty">Sakārtots</button>
-              <button class="view-btn" data-view="raw">Neapstrādāts</button>
+              <button class="view-btn"                  data-view="raw">Neapstrādāts</button>
             </div>
             <button id="copy-response-btn" class="copy-btn">Kopēt</button>
           </div>
         </div>
-        <!-- Shows total record count + upstream URL after a successful request -->
-        <div class="response-meta" id="response-meta" style="display:none">
-          <span id="response-total" class="meta-chip"></span>
-          <span id="response-url-chip" class="meta-chip meta-chip--url"></span>
+        <!-- Meta bar: record count + upstream URL -->
+        <div id="response-meta"
+             class="hidden items-center gap-2 px-3 py-1.5 bg-[#0f1117] border-b border-[#30363d] flex-wrap">
+          <span id="response-total"
+                class="text-[10px] font-semibold text-[#3fb950] bg-[#0d2114]
+                       border border-[#2ea043] rounded-full px-2 py-0.5"></span>
+          <span id="response-url-chip"
+                class="text-[10px] font-mono text-[#8b949e] truncate max-w-[340px]"></span>
         </div>
-        <pre id="response-output" class="response-output"><span class="placeholder-text">Nospied "Nosūtīt pieprasījumu", lai redzētu JSON atbildi šeit.</span></pre>
+        <pre id="response-output"
+             class="flex-1 overflow-auto p-4 text-[11.5px] leading-relaxed font-mono
+                    text-[#e6edf3] bg-[#0d1117] m-0 panel-scroll"><span class="placeholder-text">Nospied "Nosūtīt pieprasījumu", lai redzētu JSON atbildi šeit.</span></pre>
       </div>
     </section>
 
-    <!-- ──────────────── RIGHT: COMPANY LOOKUP FORM ─────────────────────── -->
-    <section class="panel panel--form">
-      <div class="panel-head">
-        <h2>Uzņēmuma meklēšana</h2>
-        <p class="panel-desc">Ievadi uzņēmuma nosaukumu vai reģistrācijas numuru. Saraksts tiek atjaunots automātiski rakstīšanas laikā.</p>
+    <!-- ──────────────────── RIGHT: COMPANY LOOKUP FORM ────────────────────── -->
+    <section class="flex flex-col overflow-y-auto px-6 py-8 bg-gray-50 text-[#24292f]">
+
+      <div class="mb-5">
+        <h2 class="text-[17px] font-bold mb-2 text-[#24292f]">Uzņēmuma meklēšana</h2>
+        <p class="text-sm text-[#656d76] leading-relaxed">
+          Ievadi uzņēmuma nosaukumu vai reģistrācijas numuru.
+          Saraksts tiek atjaunots automātiski rakstīšanas laikā.
+        </p>
       </div>
 
-      <div class="callout callout--info callout--light">
+      <div class="callout callout--light">
         <span class="callout-icon">ℹ️</span>
-        <div>Šī forma izmanto to pašu API, ko redzams kreisajā pusē — tikai ar draudzīgāku izskatu.
-        Meklēšana sākas, kad ievadīti vismaz <strong>2 simboli</strong>.</div>
+        <div>
+          Šī forma izmanto to pašu API, ko redzams kreisajā pusē — tikai ar draudzīgāku izskatu.
+          Meklēšana sākas, kad ievadīti vismaz <strong>2 simboli</strong>.
+        </div>
       </div>
 
-      <div class="lookup-form">
-        <!-- Toggle between name search and regcode search -->
-        <div class="mode-toggle">
-          <button class="mode-btn mode-btn--active" data-mode="name">Pēc nosaukuma</button>
-          <button class="mode-btn" data-mode="regcode">Pēc reģ. numura</button>
-        </div>
-
-        <!-- Autocomplete input with spinner -->
-        <div class="autocomplete-wrap">
-          <div class="input-icon-wrap">
-            <svg class="input-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="8.5" cy="8.5" r="5.5"/>
-              <line x1="13" y1="13" x2="18" y2="18"/>
-            </svg>
-            <input
-              id="lookup-input"
-              class="lookup-input"
-              type="text"
-              autocomplete="off"
-              placeholder="Sāc rakstīt uzņēmuma nosaukumu…"
-            />
-            <div id="lookup-spinner" class="lookup-spinner hidden"></div>
-          </div>
-          <!-- Dropdown list populated by JS -->
-          <ul id="suggestions-list" class="suggestions-list hidden"></ul>
-        </div>
-
-        <p id="lookup-hint" class="lookup-hint">Ievadi vismaz 2 simbolus, lai sāktu meklēšanu.</p>
+      <!-- Search mode toggle -->
+      <div class="mode-toggle">
+        <button class="mode-btn mode-btn--active" data-mode="name">Pēc nosaukuma</button>
+        <button class="mode-btn"                  data-mode="regcode">Pēc reģ. numura</button>
       </div>
 
-      <!-- Company detail card (hidden until a company is selected) -->
-      <div id="company-card" class="company-card hidden">
-        <div class="card-head">
-          <h3 id="card-name" class="card-name"></h3>
-          <span id="card-status" class="card-status"></span>
+      <!-- Autocomplete input -->
+      <div class="relative mb-2">
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#656d76] pointer-events-none"
+               viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="8.5" cy="8.5" r="5.5"/>
+            <line x1="13" y1="13" x2="18" y2="18"/>
+          </svg>
+          <input id="lookup-input"
+                 class="w-full pl-9 pr-10 py-2.5 border border-[#d1d9e0] rounded-lg text-sm
+                        bg-white text-[#24292f] focus:outline-none focus:border-[#0969da]
+                        focus:ring-1 focus:ring-[#0969da]/20 transition-colors
+                        placeholder:text-[#adb5bd]"
+                 type="text" autocomplete="off"
+                 placeholder="Sāc rakstīt uzņēmuma nosaukumu…" />
+          <div id="lookup-spinner" class="lookup-spinner hidden"></div>
         </div>
-        <div class="card-grid">
-          <div class="card-field">
-            <span class="field-label">Reģistrācijas nr.</span>
-            <span id="card-regcode" class="field-value mono"></span>
+        <ul id="suggestions-list"
+            class="suggestions-list hidden absolute z-20 w-full mt-1 bg-white
+                   border border-[#d1d9e0] rounded-lg shadow-lg max-h-72 overflow-y-auto"
+            role="listbox"></ul>
+      </div>
+
+      <p id="lookup-hint" class="text-xs text-[#8b949e] mb-4">
+        Ievadi vismaz 2 simbolus, lai sāktu meklēšanu.
+      </p>
+
+      <!-- Company detail card -->
+      <div id="company-card"
+           class="hidden bg-white border border-[#d1d9e0] rounded-xl shadow-sm overflow-hidden">
+
+        <div class="flex items-start justify-between gap-3 px-5 py-4
+                    border-b border-[#f3f4f6] bg-[#f8f9fa]">
+          <h3 id="card-name" class="text-base font-bold text-[#24292f] leading-snug"></h3>
+          <span id="card-status" class="card-status flex-shrink-0 mt-0.5"></span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-x-4 gap-y-3 px-5 py-4">
+          <div class="flex flex-col gap-0.5">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">Reģistrācijas nr.</span>
+            <span id="card-regcode" class="text-sm font-mono text-[#24292f]"></span>
           </div>
-          <div class="card-field">
-            <span class="field-label">SEPA identifikators</span>
-            <span id="card-sepa" class="field-value mono"></span>
+          <div class="flex flex-col gap-0.5">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">SEPA identifikators</span>
+            <span id="card-sepa" class="text-sm font-mono text-[#24292f]"></span>
           </div>
-          <div class="card-field">
-            <span class="field-label">Veids</span>
-            <span id="card-type" class="field-value"></span>
+          <div class="flex flex-col gap-0.5">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">Veids</span>
+            <span id="card-type" class="text-sm text-[#24292f]"></span>
           </div>
-          <div class="card-field">
-            <span class="field-label">Reģistra veids</span>
-            <span id="card-regtype" class="field-value"></span>
+          <div class="flex flex-col gap-0.5">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">Reģistra veids</span>
+            <span id="card-regtype" class="text-sm text-[#24292f]"></span>
           </div>
-          <div class="card-field card-field--full">
-            <span class="field-label">Juridiskā adrese</span>
-            <span id="card-address" class="field-value"></span>
+          <div class="col-span-2 flex flex-col gap-0.5">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">Juridiskā adrese</span>
+            <span id="card-address" class="text-sm text-[#24292f]"></span>
           </div>
-          <div class="card-field">
-            <span class="field-label">Reģistrēts</span>
-            <span id="card-registered" class="field-value"></span>
+          <div class="flex flex-col gap-0.5">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">Reģistrēts</span>
+            <span id="card-registered" class="text-sm text-[#24292f]"></span>
           </div>
-          <div class="card-field">
-            <span class="field-label">Izslēgts</span>
-            <span id="card-terminated" class="field-value"></span>
+          <div class="flex flex-col gap-0.5">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">Izslēgts</span>
+            <span id="card-terminated" class="text-sm text-[#24292f]"></span>
           </div>
         </div>
 
-        <!-- Toggle to reveal the raw JSON that came back from the API -->
-        <div class="card-raw-toggle">
-          <button id="card-raw-btn" class="raw-toggle-btn">Rādīt neapstrādātu JSON atbildi</button>
+        <div class="px-5 pb-2">
+          <button id="card-raw-btn"
+                  class="text-xs text-[#0969da] hover:underline bg-transparent border-0
+                         cursor-pointer px-0 py-1">
+            Rādīt neapstrādātu JSON atbildi
+          </button>
+          <pre id="card-raw-output"
+               class="hidden mt-2 rounded-lg bg-[#0d1117] text-[#e6edf3] text-[11px]
+                      font-mono leading-relaxed p-3 overflow-x-auto max-h-56 panel-scroll"></pre>
         </div>
-        <pre id="card-raw-output" class="card-raw-output hidden"></pre>
 
-        <button id="card-clear-btn" class="card-clear-btn">Notīrīt</button>
+        <div class="px-5 pb-4 pt-1">
+          <button id="card-clear-btn"
+                  class="w-full py-2 rounded-lg border border-[#d1d9e0] text-sm text-[#656d76]
+                         bg-white hover:bg-gray-100 hover:text-[#24292f] cursor-pointer transition-colors">
+            Notīrīt
+          </button>
+        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       PAGE: DOCUMENTATION  (TypeScript code examples)
-  ═══════════════════════════════════════════════════════════════════════════ -->
-  <main id="page-docs" class="docs-page hidden">
+  <!-- ═══════════════════════ PAGE: DOCS ═══════════════════════════════════════ -->
+  <!-- Layout via #page-docs in input.css (flex row, flex-1) -->
+  <main id="page-docs" class="hidden">
 
-    <div class="docs-sidebar">
-      <p class="docs-sidebar-title">Saturs</p>
-      <nav>
-        <a class="docs-nav-link docs-nav-link--active" href="#docs-intro">Ievads</a>
-        <a class="docs-nav-link" href="#docs-types">TypeScript tipi</a>
-        <a class="docs-nav-link" href="#docs-search-name">Meklēt pēc nosaukuma</a>
-        <a class="docs-nav-link" href="#docs-search-reg">Meklēt pēc reģ. nr.</a>
-        <a class="docs-nav-link" href="#docs-sql">SQL vaicājums</a>
-        <a class="docs-nav-link" href="#docs-errors">Kļūdu apstrāde</a>
-        <a class="docs-nav-link" href="#docs-fields">Atbildes lauki</a>
-      </nav>
-    </div>
+    <!-- Sidebar -->
+    <aside class="w-52 shrink-0 bg-[#f6f8fa] border-r border-[#d1d9e0]
+                  px-3 py-6 flex flex-col gap-1 overflow-y-auto">
+      <p class="text-[10px] font-bold uppercase tracking-widest text-[#8b949e] px-3 mb-2">Saturs</p>
+      <a class="docs-nav-link docs-nav-link--active" href="#docs-intro">Ievads</a>
+      <a class="docs-nav-link" href="#docs-types">TypeScript tipi</a>
+      <a class="docs-nav-link" href="#docs-search-name">Meklēt pēc nosaukuma</a>
+      <a class="docs-nav-link" href="#docs-search-reg">Meklēt pēc reģ. nr.</a>
+      <a class="docs-nav-link" href="#docs-sql">SQL vaicājums</a>
+      <a class="docs-nav-link" href="#docs-errors">Kļūdu apstrāde</a>
+      <a class="docs-nav-link" href="#docs-fields">Atbildes lauki</a>
+    </aside>
 
-    <div class="docs-content">
+    <!-- Content -->
+    <div class="flex-1 overflow-y-auto px-10 py-8 bg-white panel-scroll">
 
-      <!-- ── Intro ────────────────────────────────────────────────────── -->
-      <section class="docs-section" id="docs-intro">
-        <h2 class="docs-h2">Ievads</h2>
-        <p>Šis serveris ir <strong>starpnieks</strong> (proxy) starp tavu kodu un <code>data.gov.lv</code> CKAN API.
-        Tas nozīmē, ka tu vari izmantot šo API savā TypeScript vai JavaScript projektā bez CORS problēmām.</p>
-        <div class="callout callout--info callout--light" style="margin-top:14px">
+      <!-- ── Intro ─────────────────────────────────────────────────────────── -->
+      <section id="docs-intro" class="mb-10">
+        <h2 class="text-xl font-bold text-[#24292f] mb-3">Ievads</h2>
+        <p class="text-sm text-[#656d76] leading-relaxed mb-4">
+          Šis serveris ir <strong class="text-[#24292f]">starpnieks</strong> (proxy) starp tavu
+          kodu un <code class="font-mono text-[#0969da] bg-blue-50 px-1 rounded text-xs">data.gov.lv</code>
+          CKAN API. Tu vari izmantot šo API savā TypeScript projektā bez CORS problēmām.
+        </p>
+        <div class="callout callout--light">
           <span class="callout-icon">🔗</span>
-          <div>Visi pieprasījumi tiek sūtīti uz <code>https://&lt;tava-adrese&gt;/api/...</code>
-          — lokāli tas ir <code>http://localhost:3000/api/...</code></div>
+          <div>
+            Pieprasījumi iet uz
+            <code class="font-mono text-xs">https://&lt;tava-adrese&gt;/api/...</code>
+            — lokāli: <code class="font-mono text-xs">http://localhost:3000/api/...</code>
+          </div>
         </div>
-        <table class="docs-table">
-          <thead><tr><th>Metode</th><th>Galapunkts</th><th>Ko dara</th></tr></thead>
-          <tbody>
-            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/search?q=…</code></td><td>Pilna teksta meklēšana (nosaukums, adrese, utt.)</td></tr>
-            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/search?regcode=…</code></td><td>Precīza meklēšana pēc reģistrācijas numura</td></tr>
-            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/sql</code></td><td>Brīvs SQL vaicājums pret CKAN datubāzi</td></tr>
-            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/health</code></td><td>Servera statuss (uptime, timestamp)</td></tr>
-          </tbody>
-        </table>
+        <div class="overflow-x-auto mt-4">
+          <table class="w-full text-sm border-collapse">
+            <thead><tr class="bg-gray-50 text-left">
+              <th class="px-4 py-2.5 font-semibold text-[#24292f] border border-[#d1d9e0] text-xs">Metode</th>
+              <th class="px-4 py-2.5 font-semibold text-[#24292f] border border-[#d1d9e0] text-xs">Galapunkts</th>
+              <th class="px-4 py-2.5 font-semibold text-[#24292f] border border-[#d1d9e0] text-xs">Ko dara</th>
+            </tr></thead>
+            <tbody>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0]"><span class="method-badge method-get">GET</span></td><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">/api/search?q=…</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">Pilna teksta meklēšana</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0]"><span class="method-badge method-get">GET</span></td><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">/api/search?regcode=…</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">Precīza meklēšana pēc reģ. nr.</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0]"><span class="method-badge method-post">POST</span></td><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">/api/sql</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">Brīvs SQL vaicājums</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0]"><span class="method-badge method-get">GET</span></td><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">/api/health</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">Servera statuss (uptime)</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <!-- ── TypeScript types ─────────────────────────────────────────── -->
-      <section class="docs-section" id="docs-types">
-        <h2 class="docs-h2">TypeScript tipi</h2>
-        <p>Iekopē šos tipus savā projektā, lai TypeScript zinātu, kādu formu atbilde var būt.</p>
-        <div class="code-block">
-          <div class="code-block-header">
+      <!-- ── TypeScript types ───────────────────────────────────────────────── -->
+      <section id="docs-types" class="mb-10">
+        <h2 class="text-xl font-bold text-[#24292f] mb-2">TypeScript tipi</h2>
+        <p class="text-sm text-[#656d76] leading-relaxed mb-4">
+          Iekopē šos tipus savā projektā, lai TypeScript zinātu atbildes formu.
+        </p>
+        <div class="rounded-xl overflow-hidden border border-[#30363d]">
+          <div class="flex items-center justify-between px-4 py-2.5 bg-[#161b22] border-b border-[#30363d]">
             <span class="code-lang">TypeScript</span>
             <button class="copy-btn" data-copy="types">Kopēt</button>
           </div>
-          <pre id="snippet-types" class="code-pre">/** Viens uzņēmums no Uzņēmumu reģistra */
+          <pre id="snippet-types" class="code-pre bg-[#0d1117]">/** Viens uzņēmums no Uzņēmumu reģistra */
 export interface Company {
   _id:               number;        // iekšējais DB ID
   regcode:           string;        // reģistrācijas numurs (11 cipari)
@@ -343,7 +435,7 @@ export interface Company {
   reregistration_term: string;      // pārreģistrācijas termiņš
 }
 
-/** Atbilde, ko atgriež /api/search */
+/** Atbilde ko atgriež /api/search */
 export interface SearchResponse {
   total:   number;    // kopējais atbilstošo ierakstu skaits datubāzē
   records: Company[]; // šajā lapā atgrieztie ieraksti
@@ -357,150 +449,140 @@ export interface SearchResponse {
         </div>
       </section>
 
-      <!-- ── Example: search by name ─────────────────────────────────── -->
-      <section class="docs-section" id="docs-search-name">
-        <h2 class="docs-h2">Meklēt pēc nosaukuma</h2>
-        <p>Izmanto <code>fetch</code> ar <strong>GET</strong> metodi. Parametrs <code>q</code> meklē visās teksta kolonnās.
-        Opcijas <code>limit</code> un <code>offset</code> ļauj veidot lapošanu.</p>
-        <div class="code-block">
-          <div class="code-block-header">
+      <!-- ── Search by name ────────────────────────────────────────────────── -->
+      <section id="docs-search-name" class="mb-10">
+        <h2 class="text-xl font-bold text-[#24292f] mb-2">Meklēt pēc nosaukuma</h2>
+        <p class="text-sm text-[#656d76] leading-relaxed mb-4">
+          <strong class="text-[#24292f]">GET</strong> pieprasījums.
+          Parametrs <code class="font-mono text-xs bg-gray-100 px-1.5 rounded">q</code>
+          meklē visās teksta kolonnās.
+          <code class="font-mono text-xs bg-gray-100 px-1.5 rounded">limit</code> /
+          <code class="font-mono text-xs bg-gray-100 px-1.5 rounded">offset</code> lapošanai.
+        </p>
+        <div class="rounded-xl overflow-hidden border border-[#30363d]">
+          <div class="flex items-center justify-between px-4 py-2.5 bg-[#161b22] border-b border-[#30363d]">
             <span class="code-lang">TypeScript</span>
             <button class="copy-btn" data-copy="search-name">Kopēt</button>
           </div>
-          <pre id="snippet-search-name" class="code-pre">import type { SearchResponse } from './types'; // iekopē tipus no augšas
+          <pre id="snippet-search-name" class="code-pre bg-[#0d1117]">import type { SearchResponse } from './types';
 
 /**
  * Meklē uzņēmumus pēc nosaukuma vai jebkura teksta lauka.
- *
- * @param query  - meklēšanas frāze, piem. "SIA Latvijas"
- * @param limit  - cik rezultātus atgriezt (max 50, noklusējums 10)
- * @param offset - izlaist N ierakstus (lapošanai)
- * @returns      - masīvs ar atrastajiem uzņēmumiem
+ * @param query  meklēšanas frāze, piem. "SIA Latvijas"
+ * @param limit  cik rezultātus atgriezt (max 50, noklusējums 10)
+ * @param offset izlaist N ierakstus (lapošanai)
  */
 async function searchByName(
   query: string,
   limit = 10,
-  offset = 0
+  offset = 0,
 ): Promise&lt;SearchResponse&gt; {
-  // Veidojam URL ar parametriem
   const url = new URL('http://localhost:3000/api/search');
   url.searchParams.set('q',      query);
   url.searchParams.set('limit',  String(limit));
   url.searchParams.set('offset', String(offset));
 
-  const response = await fetch(url.toString());
-
-  // Ja serveris atgrieza kļūdas statusu, izmetam kļūdu
-  if (!response.ok) {
-    const err = await response.json() as { error: string };
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    const err = await res.json() as { error: string };
     throw new Error(err.error);
   }
-
-  return response.json() as Promise&lt;SearchResponse&gt;;
+  return res.json() as Promise&lt;SearchResponse&gt;;
 }
 
-// ── Lietošanas piemērs ────────────────────────────────────────────────────
+// ── Piemērs ───────────────────────────────────────────────────────────────
 const result = await searchByName('Latvijas Banka', 5);
 console.log(`Atrasti: ${result.total}`);
-result.records.forEach(c =&gt; {
-  console.log(`${c.regcode}  ${c.name}`);
-});</pre>
+result.records.forEach(c =&gt; console.log(`${c.regcode}  ${c.name}`));</pre>
         </div>
       </section>
 
-      <!-- ── Example: search by regcode ──────────────────────────────── -->
-      <section class="docs-section" id="docs-search-reg">
-        <h2 class="docs-h2">Meklēt pēc reģistrācijas numura</h2>
-        <p>Parametrs <code>regcode</code> veic <strong>precīzu</strong> meklēšanu — atgriež tieši to uzņēmumu,
-        kuram ir šis numurs. Noderīgi, ja numurs jau ir zināms.</p>
-        <div class="code-block">
-          <div class="code-block-header">
+      <!-- ── Search by regcode ─────────────────────────────────────────────── -->
+      <section id="docs-search-reg" class="mb-10">
+        <h2 class="text-xl font-bold text-[#24292f] mb-2">Meklēt pēc reģistrācijas numura</h2>
+        <p class="text-sm text-[#656d76] leading-relaxed mb-4">
+          Parametrs <code class="font-mono text-xs bg-gray-100 px-1.5 rounded">regcode</code>
+          veic <strong class="text-[#24292f]">precīzu</strong> meklēšanu pēc reģistrācijas numura.
+        </p>
+        <div class="rounded-xl overflow-hidden border border-[#30363d]">
+          <div class="flex items-center justify-between px-4 py-2.5 bg-[#161b22] border-b border-[#30363d]">
             <span class="code-lang">TypeScript</span>
             <button class="copy-btn" data-copy="search-reg">Kopēt</button>
           </div>
-          <pre id="snippet-search-reg" class="code-pre">import type { SearchResponse, Company } from './types';
+          <pre id="snippet-search-reg" class="code-pre bg-[#0d1117]">import type { SearchResponse, Company } from './types';
 
 /**
  * Atrod uzņēmumu pēc precīza reģistrācijas numura.
- *
- * @param regcode - 11 ciparu reģistrācijas numurs, piem. "40003009497"
- * @returns         Company objekts vai null, ja netika atrasts
+ * @param regcode 11 ciparu numurs, piem. "40003009497"
+ * @returns Company objekts vai null, ja netika atrasts
  */
 async function findByRegcode(regcode: string): Promise&lt;Company | null&gt; {
   const url = new URL('http://localhost:3000/api/search');
   url.searchParams.set('regcode', regcode);
 
-  const response = await fetch(url.toString());
-
-  if (!response.ok) {
-    const err = await response.json() as { error: string };
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    const err = await res.json() as { error: string };
     throw new Error(err.error);
   }
-
-  const data = await response.json() as SearchResponse;
-
-  // Atgriežam pirmo ierakstu, vai null ja nekas netika atrasts
-  return data.records[0] ?? null;
+  const data = await res.json() as SearchResponse;
+  return data.records[0] ?? null;  // null ja nekas netika atrasts
 }
 
-// ── Lietošanas piemērs ────────────────────────────────────────────────────
+// ── Piemērs ───────────────────────────────────────────────────────────────
 const company = await findByRegcode('40003009497');
 if (company) {
   console.log(company.name);    // "LATVIJAS BANKA"
-  console.log(company.address); // "Rīga, K. Valdemāra iela 2A"
+  console.log(company.address);
 } else {
   console.log('Uzņēmums nav atrasts.');
 }</pre>
         </div>
       </section>
 
-      <!-- ── Example: SQL query ───────────────────────────────────────── -->
-      <section class="docs-section" id="docs-sql">
-        <h2 class="docs-h2">SQL vaicājums</h2>
-        <p>Izmanto <code>POST /api/sql</code> ar JSON ķermeni <code>{ sql: "SELECT ..." }</code> priekš
-        sarežģītākiem filtriem. Tabulas nosaukums vienmēr ir resursa ID pēdiņās.</p>
-        <div class="callout callout--warning" style="margin-bottom:12px">
+      <!-- ── SQL query ─────────────────────────────────────────────────────── -->
+      <section id="docs-sql" class="mb-10">
+        <h2 class="text-xl font-bold text-[#24292f] mb-2">SQL vaicājums</h2>
+        <p class="text-sm text-[#656d76] leading-relaxed mb-3">
+          <code class="font-mono text-xs bg-gray-100 px-1.5 rounded">POST /api/sql</code>
+          ar JSON ķermeni <code class="font-mono text-xs bg-gray-100 px-1.5 rounded">{'{ sql: "SELECT ..." }'}</code>.
+          Tabulas nosaukums ir resursa ID pēdiņās.
+        </p>
+        <div class="callout callout--warning mb-4">
           <span class="callout-icon">⚠️</span>
-          <div>Atļauti tikai <code>SELECT</code> vaicājumi. <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code> tiks noraidīti.</div>
+          <div>Atļauti tikai <code class="font-mono bg-[#4a3018] px-1 rounded">SELECT</code> vaicājumi.</div>
         </div>
-        <div class="code-block">
-          <div class="code-block-header">
+        <div class="rounded-xl overflow-hidden border border-[#30363d]">
+          <div class="flex items-center justify-between px-4 py-2.5 bg-[#161b22] border-b border-[#30363d]">
             <span class="code-lang">TypeScript</span>
             <button class="copy-btn" data-copy="sql">Kopēt</button>
           </div>
-          <pre id="snippet-sql" class="code-pre">import type { Company } from './types';
+          <pre id="snippet-sql" class="code-pre bg-[#0d1117]">import type { Company } from './types';
 
-// Resursa ID — tabulas nosaukums CKAN datubāzē
 const RESOURCE_ID = '25e80bf3-f107-4ab4-89ef-251b5b9374e9';
 
 interface SqlResponse {
   total:   number;
   records: Company[];
-  fields:  Array&lt;{ id: string; type: string }&gt;; // kolonnu meta-dati
+  fields:  Array&lt;{ id: string; type: string }&gt;;
 }
 
-/**
- * Izpilda brīvu SQL SELECT vaicājumu pret uzņēmumu reģistru.
- *
- * @param sql - SELECT vaicājums (max 2000 rakstzīmes)
- * @returns     vaicājuma rezultāts
- */
+/** Izpilda brīvu SQL SELECT vaicājumu pret uzņēmumu reģistru. */
 async function runSql(sql: string): Promise&lt;SqlResponse&gt; {
-  const response = await fetch('http://localhost:3000/api/sql', {
+  const res = await fetch('http://localhost:3000/api/sql', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify({ sql }),
   });
 
-  if (!response.ok) {
-    const err = await response.json() as { error: string };
+  if (!res.ok) {
+    const err = await res.json() as { error: string };
     throw new Error(err.error);
   }
-
-  return response.json() as Promise&lt;SqlResponse&gt;;
+  return res.json() as Promise&lt;SqlResponse&gt;;
 }
 
-// ── Lietošanas piemērs: aktīvie SIA Rīgā ─────────────────────────────────
+// ── Piemērs: aktīvie SIA Rīgā ────────────────────────────────────────────
 const result = await runSql(`
   SELECT regcode, name, address, registered
   FROM "${RESOURCE_ID}"
@@ -510,513 +592,81 @@ const result = await runSql(`
   ORDER BY registered DESC
   LIMIT 20
 `);
-
-console.log(`Atrasti: ${result.total}`);
-result.records.forEach(c =&gt; {
-  console.log(`${c.regcode}  ${c.name}`);
-});</pre>
+result.records.forEach(c =&gt; console.log(`${c.regcode}  ${c.name}`));</pre>
         </div>
       </section>
 
-      <!-- ── Error handling ───────────────────────────────────────────── -->
-      <section class="docs-section" id="docs-errors">
-        <h2 class="docs-h2">Kļūdu apstrāde</h2>
-        <p>Serveris vienmēr atgriež JSON ar <code>error</code> lauku, ja kas noiet greizi.
-        Zemāk ir universāls palīgfunkcijas piemērs.</p>
-        <div class="code-block">
-          <div class="code-block-header">
+      <!-- ── Error handling ────────────────────────────────────────────────── -->
+      <section id="docs-errors" class="mb-10">
+        <h2 class="text-xl font-bold text-[#24292f] mb-2">Kļūdu apstrāde</h2>
+        <p class="text-sm text-[#656d76] leading-relaxed mb-4">
+          Serveris vienmēr atgriež
+          <code class="font-mono text-xs bg-gray-100 px-1.5 rounded">{ error: "..." }</code>
+          kļūdas gadījumā. Universāls iesaiņotājs:
+        </p>
+        <div class="rounded-xl overflow-hidden border border-[#30363d]">
+          <div class="flex items-center justify-between px-4 py-2.5 bg-[#161b22] border-b border-[#30363d]">
             <span class="code-lang">TypeScript</span>
             <button class="copy-btn" data-copy="errors">Kopēt</button>
           </div>
-          <pre id="snippet-errors" class="code-pre">/** HTTP statusa kodi, ko serveris var atgriezt: */
+          <pre id="snippet-errors" class="code-pre bg-[#0d1117]">// HTTP statusi:
 // 200 – viss kārtībā
 // 400 – nepareizs pieprasījums (trūkst parametru, kļūdains SQL)
-// 429 – pārāk daudz pieprasījumu (rate limit — 120/min vai 20/min SQL)
+// 429 – pārāk daudz pieprasījumu (120/min globāli, 20/min SQL)
 // 500 – servera kļūda
 // 502 – data.gov.lv nav pieejams
 
-interface ApiError {
-  error: string; // cilvēklasāms kļūdas apraksts
-}
+/** Daudzpusīgs fetch iesaiņotājs ar kļūdu apstrādi. */
+async function apiFetch&lt;T&gt;(url: string, init?: RequestInit): Promise&lt;T&gt; {
+  const res = await fetch(url, init);
 
-/**
- * Daudzpusīgs fetch iesaiņotājs ar kļūdu apstrādi.
- * Izmet Error ar kļūdas ziņojumu no servera, ja response nav ok.
- */
-async function apiFetch&lt;T&gt;(
-  url:    string,
-  init?:  RequestInit
-): Promise&lt;T&gt; {
-  const response = await fetch(url, init);
-
-  if (!response.ok) {
-    // Serveris vienmēr atgriež { error: "..." } kļūdas gadījumā
-    const body = await response.json() as ApiError;
-    throw new Error(`[${response.status}] ${body.error}`);
+  if (!res.ok) {
+    const body = await res.json() as { error: string };
+    throw new Error(`[${res.status}] ${body.error}`);
   }
-
-  return response.json() as Promise&lt;T&gt;;
+  return res.json() as Promise&lt;T&gt;;
 }
 
-// ── Lietošanas piemērs ar try/catch ──────────────────────────────────────
+// ── Piemērs ───────────────────────────────────────────────────────────────
 try {
   const data = await apiFetch&lt;SearchResponse&gt;(
     'http://localhost:3000/api/search?q=Latvijas'
   );
   console.log(data.records);
 } catch (err) {
-  // err.message saturēs servera kļūdas aprakstu
-  console.error('Kļūda:', err);
+  console.error('Kļūda:', err); // kļūdas ziņojums no servera
 }</pre>
         </div>
       </section>
 
-      <!-- ── Response fields ──────────────────────────────────────────── -->
-      <section class="docs-section" id="docs-fields">
-        <h2 class="docs-h2">Atbildes lauki</h2>
-        <p>Katrs <code>Company</code> objekts satur šādus laukus:</p>
-        <table class="docs-table">
-          <thead>
-            <tr><th>Lauks</th><th>Tips</th><th>Apraksts</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><code>regcode</code></td><td>string</td><td>Reģistrācijas numurs (11 cipari)</td></tr>
-            <tr><td><code>name</code></td><td>string</td><td>Pilns nosaukums</td></tr>
-            <tr><td><code>sepa</code></td><td>string</td><td>SEPA identifikators (LVxx...)</td></tr>
-            <tr><td><code>type</code></td><td>string</td><td>Juridiskās formas kods (SIA, AS, BDR...)</td></tr>
-            <tr><td><code>type_text</code></td><td>string</td><td>Juridiskās formas nosaukums latviski</td></tr>
-            <tr><td><code>regtype</code></td><td>string</td><td>Reģistra kods (U = Uzņēmumu reģistrs, B = BNR...)</td></tr>
-            <tr><td><code>address</code></td><td>string</td><td>Juridiskā adrese</td></tr>
-            <tr><td><code>registered</code></td><td>string</td><td>Reģistrācijas datums (ISO 8601)</td></tr>
-            <tr><td><code>terminated</code></td><td>string | null</td><td>Izslēgšanas datums vai null</td></tr>
-            <tr><td><code>closed</code></td><td>string</td><td><code>' '</code> = aktīvs · <code>'L'</code> = likvidēts · <code>'R'</code> = reorganizēts</td></tr>
-          </tbody>
-        </table>
+      <!-- ── Fields reference ──────────────────────────────────────────────── -->
+      <section id="docs-fields" class="mb-10">
+        <h2 class="text-xl font-bold text-[#24292f] mb-3">Atbildes lauki</h2>
+        <p class="text-sm text-[#656d76] leading-relaxed mb-4">
+          Katrs <code class="font-mono text-xs bg-gray-100 px-1.5 rounded">Company</code> objekts:
+        </p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead><tr class="bg-gray-50 text-left">
+              <th class="px-4 py-2.5 font-semibold text-[#24292f] border border-[#d1d9e0] text-xs">Lauks</th>
+              <th class="px-4 py-2.5 font-semibold text-[#24292f] border border-[#d1d9e0] text-xs">Tips</th>
+              <th class="px-4 py-2.5 font-semibold text-[#24292f] border border-[#d1d9e0] text-xs">Apraksts</th>
+            </tr></thead>
+            <tbody>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">regcode</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs">string</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">Reģistrācijas numurs (11 cipari)</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">name</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs">string</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">Pilns nosaukums</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">sepa</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs">string</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">SEPA identifikators (LVxx...)</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">type / type_text</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs">string</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">Juridiskā forma (SIA, AS, BDR...)</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">address</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs">string</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">Juridiskā adrese</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">registered</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs">string</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">Reģistrācijas datums (ISO 8601)</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">terminated</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs">string | null</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">Izslēgšanas datums vai null</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2 border border-[#d1d9e0] font-mono text-xs text-[#0969da]">closed</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs">string</td><td class="px-4 py-2 border border-[#d1d9e0] text-xs text-[#656d76]">' ' = aktīvs · 'L' = likvidēts · 'R' = reorganizēts</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
     </div>
-  </main>
-
-  <script type="module" src="js/app.js"></script>
-</body>
-</html>
-
-
-  <!-- ═══ Toast container ═══════════════════════════════════════════════════ -->
-  <div id="toast-container" class="toast-container" aria-live="polite"></div>
-
-  <header class="app-header">
-    <span class="header-logo">⚡</span>
-    <div class="header-text">
-      <span class="header-title">LV Uzņēmumu Reģistrs</span>
-      <span class="header-sub">data.gov.lv API izpētes rīks</span>
-    </div>
-    <a class="header-badge" href="https://data.gov.lv/dati/dataset/uz/resource/25e80bf3-f107-4ab4-89ef-251b5b9374e9" target="_blank" rel="noopener">Datu avots ↗</a>
-  </header>
-
-  <main class="split">
-
-    <!-- ═══════════════════════ LEFT: API TESTER ═══════════════════════════ -->
-    <section class="panel panel--api">
-      <div class="panel-head">
-        <h2>API Testeris</h2>
-        <p class="panel-desc">Šeit tu vari tieši izsaukt API galapunktus (endpoints) un redzēt ko tie atgriež. Izvēlies metodi, aizpildi parametrus un nospied <strong>Nosūtīt pieprasījumu</strong>.</p>
-      </div>
-
-      <!-- Beginner callout -->
-      <div class="callout callout--info">
-        <span class="callout-icon">💡</span>
-        <div>
-          <strong>Kas ir API?</strong> API (Application Programming Interface) ir veids, kā viena programma var lūgt datus no citas. Piemēram, mūsu mājaslapa lūdz uzņēmumu datus no <code>data.gov.lv</code>.
-        </div>
-      </div>
-
-      <!-- Endpoint tabs -->
-      <div class="endpoint-tabs">
-        <button class="tab-btn tab-btn--active" data-endpoint="search-q">
-          <span class="method-badge method-get">GET</span>
-          <span class="tab-label">/api/search<span class="tab-param">?q=…</span></span>
-          <span class="tab-hint">Meklēt pēc nosaukuma</span>
-        </button>
-        <button class="tab-btn" data-endpoint="search-reg">
-          <span class="method-badge method-get">GET</span>
-          <span class="tab-label">/api/search<span class="tab-param">?regcode=…</span></span>
-          <span class="tab-hint">Meklēt pēc reģ. numura</span>
-        </button>
-        <button class="tab-btn" data-endpoint="sql">
-          <span class="method-badge method-post">POST</span>
-          <span class="tab-label">/api/sql</span>
-          <span class="tab-hint">Brīvs SQL vaicājums</span>
-        </button>
-      </div>
-
-      <!-- Params: search by name -->
-      <div id="params-search-q" class="params-panel">
-        <div class="callout callout--tip">
-          <span class="callout-icon">📖</span>
-          <div><strong>GET</strong> nozīmē, ka mēs <em>lasām</em> datus. Parametri tiek pievienoti URL aiz <code>?</code> zīmes. Šis pieprasījums veic pilna teksta meklēšanu — atrod uzņēmumus, kuros jebkurā laukā ir ievadītais vārds.</div>
-        </div>
-        <div class="params-grid">
-          <div class="param-row">
-            <label for="param-q">q <span class="required" title="Obligāts lauks">*</span>
-              <span class="param-hint">meklēšanas frāze</span>
-            </label>
-            <input id="param-q" type="text" placeholder='piem. "SIA Latvijas"' />
-          </div>
-          <div class="param-row">
-            <label for="param-limit">limit
-              <span class="param-hint">rezultātu skaits (max 50)</span>
-            </label>
-            <input id="param-limit" type="number" value="10" min="1" max="50" />
-          </div>
-          <div class="param-row">
-            <label for="param-offset">offset
-              <span class="param-hint">izlaist N ierakstus</span>
-            </label>
-            <input id="param-offset" type="number" value="0" min="0" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Params: search by regcode -->
-      <div id="params-search-reg" class="params-panel params-panel--hidden">
-        <div class="callout callout--tip">
-          <span class="callout-icon">📖</span>
-          <div><strong>Precīza meklēšana</strong> pēc <code>regcode</code> lauka — dod precīzu atbilstību. Reģistrācijas numurs Latvijā ir 11 cipari.</div>
-        </div>
-        <div class="params-grid">
-          <div class="param-row">
-            <label for="param-regcode">regcode <span class="required" title="Obligāts lauks">*</span>
-              <span class="param-hint">reģistrācijas numurs</span>
-            </label>
-            <input id="param-regcode" type="text" placeholder="piem. 40003009497" />
-          </div>
-          <div class="param-row">
-            <label for="param-reg-limit">limit
-              <span class="param-hint">rezultātu skaits (max 50)</span>
-            </label>
-            <input id="param-reg-limit" type="number" value="5" min="1" max="50" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Params: SQL -->
-      <div id="params-sql" class="params-panel params-panel--hidden">
-        <div class="callout callout--warning">
-          <span class="callout-icon">⚠️</span>
-          <div><strong>SQL (Structured Query Language)</strong> ļauj uzdot sarežģītākus jautājumus datubāzei. Tabulas nosaukums ir resursa ID. Atļauti tikai <code>SELECT</code> vaicājumi.</div>
-        </div>
-        <div class="param-row param-row--vertical">
-          <label for="param-sql">sql <span class="required">*</span>
-            <span class="param-hint">SELECT vaicājums</span>
-          </label>
-          <textarea id="param-sql" rows="6" spellcheck="false">SELECT regcode, name, address, registered
-FROM "25e80bf3-f107-4ab4-89ef-251b5b9374e9"
-WHERE name ILIKE '%latvijas%'
-LIMIT 10</textarea>
-        </div>
-      </div>
-
-      <!-- Request URL preview -->
-      <div class="request-preview">
-        <div class="request-preview-top">
-          <span class="request-preview-label">Pieprasījuma URL</span>
-          <button id="copy-url-btn" class="copy-btn" title="Kopēt URL">Kopēt</button>
-        </div>
-        <code id="request-url-display" class="request-url">—</code>
-      </div>
-
-      <button id="send-btn" class="send-btn">
-        <span id="send-btn-text">Nosūtīt pieprasījumu</span>
-        <span id="send-btn-spinner" class="btn-spinner hidden"></span>
-      </button>
-
-      <!-- Response viewer -->
-      <div class="response-box">
-        <div class="response-header">
-          <span class="response-header-label">Atbilde</span>
-          <span id="response-status" class="response-status"></span>
-          <span id="response-time"   class="response-time"></span>
-          <div class="response-header-actions">
-            <div class="view-toggle" id="api-view-toggle" title="Pārslēgt skatījumu">
-              <button class="view-btn view-btn--active" data-view="pretty">Sakārtots</button>
-              <button class="view-btn" data-view="raw">Neapstrādāts</button>
-            </div>
-            <button id="copy-response-btn" class="copy-btn">Kopēt</button>
-          </div>
-        </div>
-        <div class="response-meta" id="response-meta" style="display:none">
-          <span id="response-total" class="meta-chip"></span>
-          <span id="response-url-chip" class="meta-chip meta-chip--url"></span>
-        </div>
-        <pre id="response-output" class="response-output"><span class="placeholder-text">Nospied "Nosūtīt pieprasījumu", lai redzētu JSON atbildi šeit.</span></pre>
-      </div>
-    </section>
-
-    <!-- ═══════════════════════ RIGHT: COMPANY FORM ════════════════════════ -->
-    <section class="panel panel--form">
-      <div class="panel-head">
-        <h2>Uzņēmuma meklēšana</h2>
-        <p class="panel-desc">Ievadi uzņēmuma nosaukumu vai reģistrācijas numuru. Saraksts tiek atjaunots automātiski rakstīšanas laikā.</p>
-      </div>
-
-      <div class="callout callout--info callout--light">
-        <span class="callout-icon">ℹ️</span>
-        <div>Šī forma izmanto to pašu API, ko redzams kreisajā pusē — tikai ar draudzīgāku izskatu. Meklēšana sākas, kad ievadīti vismaz <strong>2 simboli</strong>.</div>
-      </div>
-
-      <div class="lookup-form">
-        <!-- Mode toggle -->
-        <div class="mode-toggle">
-          <button class="mode-btn mode-btn--active" data-mode="name">Pēc nosaukuma</button>
-          <button class="mode-btn" data-mode="regcode">Pēc reģ. numura</button>
-        </div>
-
-        <!-- Autocomplete input -->
-        <div class="autocomplete-wrap">
-          <div class="input-icon-wrap">
-            <svg class="input-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="8.5" cy="8.5" r="5.5"/>
-              <line x1="13" y1="13" x2="18" y2="18"/>
-            </svg>
-            <input
-              id="lookup-input"
-              class="lookup-input"
-              type="text"
-              autocomplete="off"
-              placeholder="Sāc rakstīt uzņēmuma nosaukumu…"
-            />
-            <div id="lookup-spinner" class="lookup-spinner hidden"></div>
-          </div>
-          <ul id="suggestions-list" class="suggestions-list hidden"></ul>
-        </div>
-
-        <p id="lookup-hint" class="lookup-hint">Ievadi vismaz 2 simbolus, lai sāktu meklēšanu.</p>
-      </div>
-
-      <!-- Company detail card -->
-      <div id="company-card" class="company-card hidden">
-        <div class="card-head">
-          <h3 id="card-name" class="card-name"></h3>
-          <span id="card-status" class="card-status"></span>
-        </div>
-        <div class="card-grid">
-          <div class="card-field">
-            <span class="field-label">Reģistrācijas nr.</span>
-            <span id="card-regcode" class="field-value mono"></span>
-          </div>
-          <div class="card-field">
-            <span class="field-label">SEPA identifikators</span>
-            <span id="card-sepa" class="field-value mono"></span>
-          </div>
-          <div class="card-field">
-            <span class="field-label">Veids</span>
-            <span id="card-type" class="field-value"></span>
-          </div>
-          <div class="card-field">
-            <span class="field-label">Reģistra veids</span>
-            <span id="card-regtype" class="field-value"></span>
-          </div>
-          <div class="card-field card-field--full">
-            <span class="field-label">Juridiskā adrese</span>
-            <span id="card-address" class="field-value"></span>
-          </div>
-          <div class="card-field">
-            <span class="field-label">Reģistrēts</span>
-            <span id="card-registered" class="field-value"></span>
-          </div>
-          <div class="card-field">
-            <span class="field-label">Izslēgts</span>
-            <span id="card-terminated" class="field-value"></span>
-          </div>
-        </div>
-
-        <!-- Raw response toggle for the right panel -->
-        <div class="card-raw-toggle">
-          <button id="card-raw-btn" class="raw-toggle-btn">Rādīt neapstrādātu JSON atbildi</button>
-        </div>
-        <pre id="card-raw-output" class="card-raw-output hidden"></pre>
-
-        <button id="card-clear-btn" class="card-clear-btn">Notīrīt</button>
-      </div>
-    </section>
-
-  </main>
-
-  <script type="module" src="js/app.js"></script>
-</body>
-</html>
-
-
-  <header class="app-header">
-    <span class="header-logo">⚡</span>
-    <span class="header-title">LV Company Register Explorer</span>
-    <span class="header-sub">Uzņēmumu reģistrs · data.gov.lv</span>
-  </header>
-
-  <main class="split">
-
-    <!-- ═══════════════════════ LEFT: API TESTER ═══════════════════════════ -->
-    <section class="panel panel--api">
-      <div class="panel-head">
-        <h2>API Tester</h2>
-        <p class="panel-desc">Explore the endpoints proxied by this server. Fill in the parameters, fire a request and inspect the raw JSON response.</p>
-      </div>
-
-      <!-- Endpoint selector -->
-      <div class="endpoint-tabs">
-        <button class="tab-btn tab-btn--active" data-endpoint="search-q">
-          <span class="method-badge method-get">GET</span>
-          /api/search?q=
-        </button>
-        <button class="tab-btn" data-endpoint="search-reg">
-          <span class="method-badge method-get">GET</span>
-          /api/search?regcode=
-        </button>
-        <button class="tab-btn" data-endpoint="sql">
-          <span class="method-badge method-post">POST</span>
-          /api/sql
-        </button>
-      </div>
-
-      <!-- Parameter panels -->
-      <div id="params-search-q" class="params-panel">
-        <p class="params-description">Full-text search across all fields (name, address, …). Good for company name lookup.</p>
-        <div class="param-row">
-          <label for="param-q">q <span class="required">*</span></label>
-          <input id="param-q" type="text" placeholder='e.g. "SIA Latvijas"' />
-        </div>
-        <div class="param-row">
-          <label for="param-limit">limit</label>
-          <input id="param-limit" type="number" value="10" min="1" max="50" />
-        </div>
-        <div class="param-row">
-          <label for="param-offset">offset</label>
-          <input id="param-offset" type="number" value="0" min="0" />
-        </div>
-      </div>
-
-      <div id="params-search-reg" class="params-panel params-panel--hidden">
-        <p class="params-description">Exact match on the <code>regcode</code> field (registration number).</p>
-        <div class="param-row">
-          <label for="param-regcode">regcode <span class="required">*</span></label>
-          <input id="param-regcode" type="text" placeholder="e.g. 40003009497" />
-        </div>
-        <div class="param-row">
-          <label for="param-reg-limit">limit</label>
-          <input id="param-reg-limit" type="number" value="10" min="1" max="50" />
-        </div>
-      </div>
-
-      <div id="params-sql" class="params-panel params-panel--hidden">
-        <p class="params-description">Execute raw SQL against the CKAN datastore. The table name is the resource ID shown below.</p>
-        <div class="param-row param-row--vertical">
-          <label for="param-sql">sql <span class="required">*</span></label>
-          <textarea id="param-sql" rows="5" spellcheck="false">SELECT regcode, name, address, registered
-FROM "25e80bf3-f107-4ab4-89ef-251b5b9374e9"
-WHERE name ILIKE '%latvijas%'
-LIMIT 10</textarea>
-        </div>
-      </div>
-
-      <!-- Request URL preview -->
-      <div class="request-preview">
-        <span class="request-preview-label">Request</span>
-        <code id="request-url-display" class="request-url">—</code>
-      </div>
-
-      <button id="send-btn" class="send-btn">Send Request</button>
-
-      <!-- Response viewer -->
-      <div class="response-box">
-        <div class="response-header">
-          <span class="response-header-label">Response</span>
-          <span id="response-status" class="response-status"></span>
-          <span id="response-time" class="response-time"></span>
-          <button id="copy-response-btn" class="copy-btn" title="Copy JSON">Copy</button>
-        </div>
-        <pre id="response-output" class="response-output">Hit "Send Request" to see the result here.</pre>
-      </div>
-    </section>
-
-    <!-- ═══════════════════════ RIGHT: COMPANY FORM ════════════════════════ -->
-    <section class="panel panel--form">
-      <div class="panel-head">
-        <h2>Company Lookup</h2>
-        <p class="panel-desc">Type a company name or registration number. The form fetches suggestions live as you type.</p>
-      </div>
-
-      <div class="lookup-form">
-
-        <!-- Mode toggle -->
-        <div class="mode-toggle">
-          <button class="mode-btn mode-btn--active" data-mode="name">By Name</button>
-          <button class="mode-btn" data-mode="regcode">By Reg. Number</button>
-        </div>
-
-        <!-- Autocomplete input -->
-        <div class="autocomplete-wrap">
-          <div class="input-icon-wrap">
-            <svg class="input-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="8.5" cy="8.5" r="5.5"/>
-              <line x1="13" y1="13" x2="18" y2="18"/>
-            </svg>
-            <input
-              id="lookup-input"
-              class="lookup-input"
-              type="text"
-              autocomplete="off"
-              placeholder="Start typing a company name…"
-            />
-            <div id="lookup-spinner" class="lookup-spinner hidden"></div>
-          </div>
-          <ul id="suggestions-list" class="suggestions-list hidden"></ul>
-        </div>
-
-        <p id="lookup-hint" class="lookup-hint">Type at least 2 characters to search.</p>
-
-      </div>
-
-      <!-- Company detail card -->
-      <div id="company-card" class="company-card hidden">
-        <div class="card-head">
-          <h3 id="card-name" class="card-name"></h3>
-          <span id="card-status" class="card-status"></span>
-        </div>
-        <div class="card-grid">
-          <div class="card-field">
-            <span class="field-label">Registration No.</span>
-            <span id="card-regcode" class="field-value"></span>
-          </div>
-          <div class="card-field">
-            <span class="field-label">SEPA ID</span>
-            <span id="card-sepa" class="field-value"></span>
-          </div>
-          <div class="card-field">
-            <span class="field-label">Type</span>
-            <span id="card-type" class="field-value"></span>
-          </div>
-          <div class="card-field">
-            <span class="field-label">Reg. Type</span>
-            <span id="card-regtype" class="field-value"></span>
-          </div>
-          <div class="card-field card-field--full">
-            <span class="field-label">Address</span>
-            <span id="card-address" class="field-value"></span>
-          </div>
-          <div class="card-field">
-            <span class="field-label">Registered</span>
-            <span id="card-registered" class="field-value"></span>
-          </div>
-          <div class="card-field">
-            <span class="field-label">Terminated</span>
-            <span id="card-terminated" class="field-value"></span>
-          </div>
-        </div>
-        <button id="card-clear-btn" class="card-clear-btn">Clear</button>
-      </div>
-    </section>
-
   </main>
 
   <script type="module" src="js/app.js"></script>

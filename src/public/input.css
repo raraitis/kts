@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Keyframes (must live outside @layer to work in all browsers) ─────────── */
+@keyframes toast-in  { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toast-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+@keyframes spin-ring { to { transform: rotate(360deg); } }
+
+/* ─── Page layout (IDs used as CSS hooks to avoid display-vs-hidden fight) ─── */
+#page-tool { display: grid; grid-template-columns: 1fr 1fr; flex: 1; overflow: hidden; }
+#page-docs { display: flex; flex: 1; }
+#page-tool.hidden,
+#page-docs.hidden { display: none !important; }
+
+@layer components {
+
+  /* ── Toast ─────────────────────────────────────────────────────────────────── */
+  .toast {
+    @apply flex items-start gap-3 px-4 py-3 rounded-lg text-sm cursor-pointer shadow-xl;
+    min-width: 260px;
+    max-width: 400px;
+    pointer-events: all;
+    animation: toast-in 0.2s ease-out forwards;
+  }
+  .toast--exit    { animation: toast-out 0.2s ease-out forwards; }
+  .toast--success { @apply bg-[#0d2114] border border-[#2ea043] text-[#3fb950]; }
+  .toast--error   { @apply bg-[#290d0d] border border-[#da3633] text-[#f85149]; }
+  .toast--warning { @apply bg-[#2d2011] border border-[#d29922] text-[#e3b341]; }
+  .toast--info    { @apply bg-[#121d2f] border border-[#388bfd] text-[#79c0ff]; }
+  .toast-icon  { @apply text-base leading-none mt-0.5; }
+  .toast-title { @apply font-semibold text-xs mb-0.5; }
+  .toast-msg   { @apply text-xs leading-snug opacity-90; }
+
+  /* ── Spinners ───────────────────────────────────────────────────────────────── */
+  .btn-spinner, .lookup-spinner {
+    @apply inline-block rounded-full flex-shrink-0;
+    border: 2px solid rgba(255,255,255,0.18);
+    border-top-color: #fff;
+    animation: spin-ring 0.65s linear infinite;
+  }
+  .btn-spinner    { @apply w-4 h-4; }
+  .lookup-spinner { @apply w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2; }
+
+  /* ── Method badges ──────────────────────────────────────────────────────────── */
+  .method-badge {
+    @apply inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase;
+    font-family: theme('fontFamily.mono');
+  }
+  .method-get  { @apply bg-blue-950  text-blue-400; }
+  .method-post { @apply bg-green-950 text-green-400; }
+
+  /* ── Endpoint tab buttons ───────────────────────────────────────────────────── */
+  .tab-btn {
+    @apply flex flex-col gap-0.5 px-3 py-2 rounded text-left border border-[#30363d]
+           bg-[#0d1117] text-[#8b949e] text-xs cursor-pointer transition-colors;
+  }
+  .tab-btn:hover   { @apply border-[#58a6ff] text-[#e6edf3]; }
+  .tab-btn--active { @apply border-[#58a6ff] bg-[#121d2f] text-[#e6edf3]; }
+  .tab-label { font-family: theme('fontFamily.mono'); @apply font-medium text-[11px] text-[#e6edf3]; }
+  .tab-param { @apply text-[#58a6ff]; }
+  .tab-hint  { @apply text-[10px] text-[#8b949e] mt-0.5; }
+
+  /* ── Params panel hidden state ──────────────────────────────────────────────── */
+  .params-panel--hidden { @apply hidden; }
+
+  /* ── View toggle (pretty / raw) ─────────────────────────────────────────────── */
+  .view-toggle { @apply flex rounded overflow-hidden border border-[#30363d]; }
+  .view-btn {
+    @apply px-3 py-1 text-xs text-[#8b949e] bg-transparent border-0 cursor-pointer
+           transition-colors leading-none;
+  }
+  .view-btn:hover   { @apply text-[#e6edf3]; }
+  .view-btn--active { @apply bg-[#30363d] text-[#e6edf3]; }
+
+  /* ── Callout boxes ──────────────────────────────────────────────────────────── */
+  .callout {
+    @apply flex gap-3 p-3 rounded-lg text-xs leading-relaxed mb-4;
+  }
+  .callout--info    { @apply bg-[#121d2f] border border-[#1f3a5f] text-[#79c0ff]; }
+  .callout--tip     { @apply bg-[#0d2114] border border-[#1a3a22] text-[#3fb950]; }
+  .callout--warning { @apply bg-[#2d2011] border border-[#4a3018] text-[#e3b341]; }
+  .callout--light   { @apply bg-blue-50 border border-blue-200 text-blue-700; }
+  .callout-icon { @apply text-sm flex-shrink-0 mt-0.5; }
+
+  /* ── Mode toggle (right panel) ──────────────────────────────────────────────── */
+  .mode-toggle { @apply flex rounded border border-[#d1d9e0] overflow-hidden mb-4; }
+  .mode-btn {
+    @apply flex-1 py-2 text-sm font-medium bg-white text-[#656d76] cursor-pointer
+           transition-colors border-0;
+  }
+  .mode-btn:hover   { @apply bg-gray-50 text-[#24292f]; }
+  .mode-btn--active { @apply bg-[#0969da] text-white; }
+
+  /* ── Autocomplete suggestions list ─────────────────────────────────────────── */
+  .suggestion-item {
+    @apply px-3 py-2.5 cursor-pointer transition-colors border-b border-gray-100 last:border-0;
+  }
+  .suggestion-item:hover,
+  .suggestion-item.highlighted { @apply bg-blue-50; }
+  .suggestions-empty { @apply px-3 py-4 text-sm text-[#656d76] text-center italic; }
+  .sug-name    { @apply text-sm font-medium text-[#24292f] leading-snug truncate; }
+  .sug-meta    { @apply flex gap-2 mt-0.5; }
+  .sug-regcode { font-family: theme('fontFamily.mono'); @apply text-xs text-[#656d76]; }
+  .sug-type    { @apply text-xs text-[#656d76]; }
+  .sug-address { @apply text-xs text-[#656d76] mt-0.5 truncate; }
+
+  mark { background: #fff3b0; color: inherit; border-radius: 2px; padding: 0 1px; }
+
+  /* ── Company card status badge ──────────────────────────────────────────────── */
+  .card-status { @apply px-2 py-0.5 rounded-full text-xs font-semibold; }
+  .card-status.active   { @apply bg-green-100 text-green-700; }
+  .card-status.inactive { @apply bg-red-100   text-red-600; }
+
+  /* ── Header nav buttons ─────────────────────────────────────────────────────── */
+  .nav-btn {
+    @apply px-3.5 py-1.5 rounded text-xs font-medium text-[#8b949e]
+           bg-transparent border border-transparent cursor-pointer transition-colors;
+  }
+  .nav-btn:hover   { @apply text-[#e6edf3] border-[#30363d]; }
+  .nav-btn--active { @apply text-[#e6edf3] bg-[#30363d] border-[#30363d]; }
+
+  /* ── Copy button ────────────────────────────────────────────────────────────── */
+  .copy-btn {
+    @apply px-2.5 py-1 rounded text-xs text-[#58a6ff] border border-[#30363d]
+           bg-transparent cursor-pointer hover:bg-[#58a6ff]/10 transition-colors;
+  }
+
+  /* ── Send request button ────────────────────────────────────────────────────── */
+  .send-btn {
+    @apply flex items-center justify-center gap-2 w-full py-3 rounded-lg
+           bg-[#238636] hover:bg-[#2ea043] active:bg-[#238636]
+           text-white text-sm font-semibold cursor-pointer border-0
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* ── Response status chip ───────────────────────────────────────────────────── */
+  .response-status    { @apply text-xs font-mono font-bold; }
+  .response-status.ok  { color: #3fb950; }
+  .response-status.err { color: #f85149; }
+
+  /* ── JSON syntax highlighting ───────────────────────────────────────────────── */
+  .json-key    { color: #79c0ff; }
+  .json-string { color: #a5d6ff; }
+  .json-number { color: #f2cc60; }
+  .json-bool   { color: #ff9e64; }
+  .json-null   { color: #8b949e; }
+
+  .placeholder-text { @apply text-[#8b949e] italic; }
+
+  /* ── Docs sidebar nav links ─────────────────────────────────────────────────── */
+  .docs-nav-link {
+    @apply block px-3 py-1.5 text-sm text-[#656d76] rounded no-underline
+           hover:text-[#24292f] hover:bg-gray-100 transition-colors;
+  }
+  .docs-nav-link--active,
+  .docs-nav-link:target { @apply text-[#0969da] bg-blue-50 font-medium; }
+
+  /* ── Code blocks in docs ────────────────────────────────────────────────────── */
+  .code-pre {
+    color: #e6edf3;
+    font-family: theme('fontFamily.mono');
+    @apply text-[11.5px] leading-relaxed overflow-x-auto whitespace-pre p-4;
+  }
+  .code-lang {
+    @apply text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded
+           bg-[#58a6ff]/15 text-[#79c0ff];
+  }
+}
+
+/* ─── Custom scrollbar (dark panels) ───────────────────────────────────────── */
+.panel-scroll::-webkit-scrollbar         { width: 6px; }
+.panel-scroll::-webkit-scrollbar-track  { background: transparent; }
+.panel-scroll::-webkit-scrollbar-thumb  { background: #30363d; border-radius: 3px; }
+.panel-scroll::-webkit-scrollbar-thumb:hover { background: #484f58; }
