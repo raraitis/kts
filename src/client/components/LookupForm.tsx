@@ -118,9 +118,9 @@ export default function LookupForm({ addToast }: Props) {
   }
 
   return (
-    <section className="flex flex-col overflow-hidden bg-white">
+    <section className="flex flex-col flex-1 overflow-hidden bg-white">
       {/* Section header */}
-      <div className="px-6 pt-6 pb-4 border-b border-gray-200 shrink-0">
+      <div className="px-4 pt-5 pb-4 sm:px-6 sm:pt-6 border-b border-gray-200 shrink-0">
         <h2 className="text-[17px] font-bold text-[#24292f] mb-1">Uzņēmumu Meklētājs</h2>
         <p className="text-sm text-[#656d76] leading-relaxed">
           Meklē Latvijas uzņēmumus pēc nosaukuma vai reģistrācijas numura.
@@ -128,7 +128,7 @@ export default function LookupForm({ addToast }: Props) {
         </p>
       </div>
 
-      <div className="px-6 pt-5 flex flex-col flex-1 overflow-hidden">
+      <div className="px-4 pt-4 sm:px-6 sm:pt-5 flex flex-col flex-1 overflow-hidden">
         {/* Mode toggle */}
         <div className="mode-toggle">
           <button

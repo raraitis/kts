@@ -153,7 +153,7 @@ export default function ApiTester({ addToast }: Props) {
     'bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-sm text-[#e6edf3] font-mono focus:outline-none focus:border-[#58a6ff] transition-colors placeholder:text-[#484f58] w-full';
 
   return (
-    <section className="flex flex-col overflow-y-auto px-6 py-8 bg-[#161b22] border-r border-[#30363d] panel-scroll">
+    <section className="flex flex-col flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-8 bg-[#161b22] border-r border-[#30363d] panel-scroll">
       <div className="mb-5">
         <h2 className="text-[17px] font-bold mb-2">API Testeris</h2>
         <p className="text-sm text-[#8b949e] leading-relaxed">

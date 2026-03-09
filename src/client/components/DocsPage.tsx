@@ -139,8 +139,8 @@ function CodeBlock({ snippet, title }: { snippet: Snippet; title?: string }) {
 export default function DocsPage() {
   return (
     <div className="flex flex-1 overflow-hidden bg-white">
-      {/* Sidebar */}
-      <aside className="w-56 shrink-0 border-r border-gray-200 py-6 px-3 overflow-y-auto panel-scroll">
+      {/* Sidebar — hidden on mobile */}
+      <aside className="hidden lg:flex lg:flex-col w-56 shrink-0 border-r border-gray-200 py-6 px-3 overflow-y-auto panel-scroll">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#656d76] px-3 mb-2">
           Satura rādītājs
         </p>
@@ -166,7 +166,7 @@ export default function DocsPage() {
       </aside>
 
       {/* Content */}
-      <article className="flex-1 overflow-y-auto px-10 py-8 max-w-3xl panel-scroll text-[#24292f]">
+      <article className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-10 max-w-3xl panel-scroll text-[#24292f]">
 
         <section id="intro" className="mb-10">
           <h1 className="text-2xl font-bold mb-3">API Dokumentācija</h1>
