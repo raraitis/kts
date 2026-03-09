@@ -1,0 +1,4 @@
+node_modules/
+dist/
+src/public/js/
+*.js.map
