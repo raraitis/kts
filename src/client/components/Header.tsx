@@ -1,4 +1,4 @@
-import { Zap, Wrench, BookOpen, Github } from 'lucide-react';
+import { Zap, Wrench, BookOpen, Github, UserPlus } from 'lucide-react';
 import type { Page } from '../types';
 
 interface Props {
@@ -29,6 +29,9 @@ export default function Header({ page, onPageChange }: Props) {
           <button className={navBtnClass(page === 'docs')} onClick={() => onPageChange('docs')}>
             <BookOpen size={12} /> Dokumentācija
           </button>
+          <button className={navBtnClass(page === 'register')} onClick={() => onPageChange('register')}>
+            <UserPlus size={12} /> Reģistrācija
+          </button>
         </nav>
 
         <a
@@ -50,6 +53,9 @@ export default function Header({ page, onPageChange }: Props) {
         </button>
         <button className={navBtnClass(page === 'docs')} onClick={() => onPageChange('docs')}>
           <BookOpen size={12} /> Dokumentācija
+        </button>
+        <button className={navBtnClass(page === 'register')} onClick={() => onPageChange('register')}>
+          <UserPlus size={12} /> Reģistrācija
         </button>
       </nav>
     </header>

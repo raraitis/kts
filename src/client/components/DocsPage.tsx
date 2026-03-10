@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ArrowRight, Store, RefreshCw, Eye } from 'lucide-react';
 
 interface Snippet {
   id: string;
@@ -157,6 +158,10 @@ export default function DocsPage() {
             ['#js',        '💻 JS piemēri'],
             ['#errors',    '⚠️ Kļūdu kodi'],
             ['#limits',    '🚦 Ātruma limits'],
+            ['#mobx',      '📦 MobX — kopīgs stāvoklis'],
+            ['#mobx-store','  Store'],
+            ['#mobx-flow', '  Datu plūsma'],
+            ['#mobx-obs',  '  observer()'],
           ].map(([href, label]) => (
             <a key={href} href={href} className="docs-nav-link" style={{ paddingLeft: href.startsWith('#search') || href === '#sql' || href === '#health' ? '1.5rem' : undefined }}>
               {label}
@@ -321,6 +326,185 @@ export default function DocsPage() {
           <p className="text-xs text-[#656d76] mt-3">
             Kļūdas atbildes formāts: <code className="font-mono bg-gray-100 px-1 rounded">{'{ "error": "apraksts" }'}</code>
           </p>
+        </section>
+
+        {/* ── MobX section ───────────────────────────────────────────────── */}
+        <section id="mobx" className="mb-10">
+          <h2 className="text-xl font-bold mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+            <Store size={18} className="text-[#7c3aed]" />
+            MobX — kopīgs stāvoklis starp soļiem
+          </h2>
+          <p className="text-sm text-[#656d76] leading-relaxed mb-4">
+            Lapas <strong>Reģistrācija</strong> tabulā ieviestu funkcionālu 3-soļu formu, kur viens un tas pats
+            uzņēmuma objekts ir pieejams visiem soļiem <em>bez prop-drilling un bez atkārtotas
+            ielādes</em>. To nodrošina <strong>MobX</strong> — reaktīva stāvokļa pārvaldības bibliotēka.
+          </p>
+
+          <div className="callout callout--light mb-5">
+            <ArrowRight size={14} className="callout-icon text-[#7c3aed] mt-0.5" />
+            <div className="text-sm">
+              Atver <strong>Reģistrācija</strong> navīgācijā, lai redzētu šo piemēru darbībā.
+              Ievads nav sinhronizēts ar API Testeri — tas ir nodarbots MobX demonstrācijai.
+            </div>
+          </div>
+
+          {/* Why MobX */}
+          <h3 id="mobx-store" className="text-base font-semibold mt-6 mb-2 flex items-center gap-2">
+            <Store size={14} className="text-[#7c3aed]" /> RegistrationStore
+          </h3>
+          <p className="text-sm text-[#656d76] mb-3 leading-relaxed">
+            Viens <code className="font-mono text-xs bg-gray-100 px-1 rounded">makeAutoObservable</code> klases
+            instance glabā visu formas stāvokli. <code className="font-mono text-xs bg-gray-100 px-1 rounded">actions</code>
+            maina stāvokli; <code className="font-mono text-xs bg-gray-100 px-1 rounded">computed</code> vērtības
+            atjauno„as automātiski.
+          </p>
+          <CodeBlock
+            snippet={{
+              id: 'mobx-store',
+              lang: 'typescript',
+              code: `// src/client/stores/RegistrationStore.ts
+import { makeAutoObservable } from 'mobx';
+
+export class RegistrationStore {
+  company: CompanyData | null = null;     // 1. solis: izvēlētais uzņēmums
+  email = '';                             // 2. solis: e-pasts
+  emailVerified = false;
+  billingAddress: BillingAddress = emptyBilling(); // 3. solis
+  billingSameAsCompany = false;
+  currentStep: 1 | 2 | 3 = 1;
+
+  constructor() { makeAutoObservable(this); }
+
+  // Iedarbina 1. solī
+  selectCompany(company: CompanyData) {
+    this.company = company;
+  }
+
+  // Iedarbina 3. solī — čeklojas "billing = company address"
+  setBillingSameAsCompany(val: boolean) {
+    this.billingSameAsCompany = val;
+    if (val) this.copyCompanyToBilling(); // automātiski aizpilda laukus
+  }
+
+  copyCompanyToBilling() {
+    if (!this.company) return;
+    const parts = this.company.address.split(',').map(p => p.trim());
+    this.billingAddress = {
+      street:     parts[0] ?? '',
+      city:       parts[1] ?? '',
+      postalCode: parts[2] ?? '',
+      country:    'Latvia',
+    };
+  }
+
+  // computed — MobX pārrēķinā automātiski
+  get canProceedFromStep1() { return this.company !== null; }
+  get billingIsComplete()   { return this.billingAddress.street.length > 0; }
+}`,
+            }}
+          />
+
+          {/* Context + hook */}
+          <h3 className="text-base font-semibold mt-6 mb-2 flex items-center gap-2">
+            <RefreshCw size={14} className="text-[#7c3aed]" /> React konteksts un <code className="font-mono text-sm">useRegistrationStore()</code>
+          </h3>
+          <p className="text-sm text-[#656d76] mb-3 leading-relaxed">
+            Konteksts nodrošina, ka visi soļi lieto <em>vienu un to pašu</em> store instanci.
+            Hūks slēpj <code className="font-mono text-xs bg-gray-100 px-1 rounded">useContext</code> izsaukumu — komponents
+            nezina, kur store nāk no.
+          </p>
+          <CodeBlock
+            snippet={{
+              id: 'mobx-context',
+              lang: 'typescript',
+              code: `// src/client/stores/StoreContext.ts
+import { createContext, useContext } from 'react';
+import { RegistrationStore } from './RegistrationStore';
+
+const store = new RegistrationStore();
+const StoreContext = createContext<RegistrationStore>(store);
+
+export function useRegistrationStore() {
+  return useContext(StoreContext);
+}
+
+// src/client/components/registration/RegistrationForm.tsx
+// Katra <RegistrationForm /> instance saņem savu izolētu store:
+<StoreContext.Provider value={new RegistrationStore()}>
+  <Step1CompanySearch />
+  <Step2EmailVerify />
+  <Step3Billing />
+</StoreContext.Provider>`,
+            }}
+          />
+
+          {/* observer */}
+          <h3 id="mobx-obs" className="text-base font-semibold mt-6 mb-2 flex items-center gap-2">
+            <Eye size={14} className="text-[#7c3aed]" /> <code className="font-mono text-sm">observer()</code> — reaktīvs renderis
+          </h3>
+          <p className="text-sm text-[#656d76] mb-3 leading-relaxed">
+            Jebkurš komponents, kas <em>lasa</em> no store, jāaptver ar{' '}
+            <code className="font-mono text-xs bg-gray-100 px-1 rounded">observer()</code>.
+            MobX automātiski izseko, kurus laukus komponents izmanto, un pārzīmē tikai tad,
+            kad tie mainās. Nav <code className="font-mono text-xs bg-gray-100 px-1 rounded">useEffect</code>,
+            nav manuālas atkarību sarakstu.
+          </p>
+          <CodeBlock
+            snippet={{
+              id: 'mobx-observer',
+              lang: 'tsx',
+              code: `import { observer } from 'mobx-react-lite';
+import { useRegistrationStore } from '../../stores/StoreContext';
+
+// ✅  observer() komponenti pārzīmējas, tiklīdz store mainās
+const Step3Billing = observer(() => {
+  const store = useRegistrationStore();
+
+  return (
+    <>
+      {/* Čekboksis atjaunina store.billingSameAsCompany */}
+      <input
+        type="checkbox"
+        checked={store.billingSameAsCompany}
+        onChange={e => store.setBillingSameAsCompany(e.target.checked)}
+      />
+      <label>Norēķinu adrese = uzņēmuma adrese</label>
+
+      {/* Lauki kļuvist sastīngušizlasāmi, ja čekboksis ir atzīmēts */}
+      <input
+        value={store.billingAddress.street}
+        disabled={store.billingSameAsCompany}   // automātiski blockē
+        onChange={e => store.setBillingField('street', e.target.value)}
+      />
+    </>
+  );
+});
+
+// ❌  Bez observer() komponenti NEKAD nepārzīmēsies:
+const BrokenStep = () => {  // <-- nav observer!
+  const store = useRegistrationStore();
+  return <div>{store.company?.name}</div>;  // paliek tūbiem
+};`,
+            }}
+          />
+
+          {/* Data flow diagram */}
+          <h3 id="mobx-flow" className="text-base font-semibold mt-6 mb-3 flex items-center gap-2">
+            Datu plūsma starp soļiem
+          </h3>
+          <div className="rounded-lg border border-[#d0d7de] overflow-hidden text-xs font-mono">
+            {[
+              { step: '1. solis', color: 'bg-blue-50 border-blue-200', action: 'store.selectCompany(c)', note: 'saglabā uzņēmumu store' },
+              { step: '2. solis', color: 'bg-purple-50 border-purple-200', action: 'store.company (tikai lasāms)', note: 'rāda kopsavilkumu, nav re-fetch' },
+              { step: '3. solis', color: 'bg-green-50 border-green-200', action: 'store.setBillingSameAsCompany(true)', note: '→ copyCompanyToBilling() aizpilda laukus' },
+            ].map(({ step, color, action, note }) => (
+              <div key={step} className={`flex items-start gap-3 px-4 py-3 border-b last:border-b-0 ${color}`}>
+                <span className="font-bold shrink-0 w-16 text-[#24292f]">{step}</span>
+                <code className="text-[#0969da] shrink-0">{action}</code>
+                <span className="text-[#656d76] ml-auto text-right">{note}</span>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section id="limits" className="mb-10">

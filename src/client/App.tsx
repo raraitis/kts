@@ -7,6 +7,7 @@ import Header from './components/Header';
 import ApiTester from './components/ApiTester';
 import LookupForm from './components/LookupForm';
 import DocsPage from './components/DocsPage';
+import RegistrationForm from './components/registration/RegistrationForm';
 
 export default function App() {
   const { toasts, addToast, removeToast } = useToast();
@@ -59,6 +60,10 @@ export default function App() {
             </div>
           </main>
         </>
+      ) : page === 'register' ? (
+        <div className="flex flex-1 overflow-y-auto bg-[#0f1117] px-4 py-8 panel-scroll">
+          <RegistrationForm />
+        </div>
       ) : (
         <DocsPage />
       )}

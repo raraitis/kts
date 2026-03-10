@@ -48,7 +48,7 @@ export interface Toast {
   message: string;
 }
 
-export type Page = 'tool' | 'docs';
+export type Page = 'tool' | 'docs' | 'register';
 
 export type EndpointKey = 'search-q' | 'search-reg' | 'sql';
 
