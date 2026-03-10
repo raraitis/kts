@@ -62,6 +62,31 @@ export interface BillingAddress {
   country: string;
 }
 
+// ─── Registry enrichment snapshot ────────────────────────────────────────────
+
+export interface RegistryOfficer {
+  firstName: string;
+  lastName: string;
+  role: string;        // mapped from `position`
+}
+
+export interface RegistryUBO {
+  firstName: string;   // from `forename`
+  lastName: string;    // from `surname`
+}
+
+export interface RegistrySnapshot {
+  registrationNumber: string;
+  companyName: string;
+  legalAddress: string;
+  officers: RegistryOfficer[];
+  beneficialOwners: RegistryUBO[];
+  businessActivity: string;
+  fetchedAt: string;   // ISO timestamp
+}
+
+export type RegistrySnapshotStatus = 'idle' | 'loading' | 'partial' | 'ready' | 'failed';
+
 export interface MirrorState {
   mode: 'name' | 'regcode';
   query: string;

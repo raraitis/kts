@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { CreditCard, ChevronLeft, Check } from 'lucide-react';
+import { CreditCard, ChevronLeft, Check, Users, Briefcase, UserCheck } from 'lucide-react';
 import { useRegistrationStore } from '../../stores/StoreContext';
 import type { BillingAddress } from '../../types';
 
@@ -33,6 +33,58 @@ const Step3Billing = observer(() => {
         </h3>
         <p className="text-xs text-[#8b949e]">Where should invoices be addressed?</p>
       </div>
+
+      {/* ── Registry snapshot panel (officers, UBOs, business activity) ───────── */}
+      {store.registrySnapshot && (store.registrySnapshot.officers.length > 0 || store.registrySnapshot.beneficialOwners.length > 0 || store.registrySnapshot.businessActivity) && (
+        <div className="rounded-lg border border-[#30363d] bg-[#0d1117] overflow-hidden">
+          <div className="px-3 py-2 border-b border-[#30363d] flex items-center gap-2">
+            <Briefcase size={11} className="text-[#8b949e]" />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">Company registry data</span>
+            {store.registrySnapshotStatus === 'partial' && (
+              <span className="ml-auto text-[10px] text-[#d29922]">Partial results</span>
+            )}
+          </div>
+
+          {/* Business activity */}
+          {store.registrySnapshot.businessActivity && (
+            <div className="px-3 py-2 border-b border-[#21262d]">
+              <p className="text-[10px] text-[#8b949e] mb-0.5">Business activity</p>
+              <p className="text-xs text-[#e6edf3]">{store.registrySnapshot.businessActivity}</p>
+            </div>
+          )}
+
+          {/* Officers */}
+          {store.registrySnapshot.officers.length > 0 && (
+            <div className="px-3 py-2 border-b border-[#21262d]">
+              <p className="text-[10px] text-[#8b949e] mb-1.5 flex items-center gap-1">
+                <UserCheck size={10} /> Board members / officers
+              </p>
+              <ul className="space-y-1">
+                {store.registrySnapshot.officers.map((o, i) => (
+                  <li key={i} className="flex items-baseline gap-2 text-xs">
+                    <span className="text-[#e6edf3] font-medium">{o.firstName} {o.lastName}</span>
+                    <span className="text-[10px] text-[#8b949e]">{o.role}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* UBOs */}
+          {store.registrySnapshot.beneficialOwners.length > 0 && (
+            <div className="px-3 py-2">
+              <p className="text-[10px] text-[#8b949e] mb-1.5 flex items-center gap-1">
+                <Users size={10} /> Beneficial owners
+              </p>
+              <ul className="space-y-1">
+                {store.registrySnapshot.beneficialOwners.map((u, i) => (
+                  <li key={i} className="text-xs text-[#e6edf3]">{u.firstName} {u.lastName}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* "Same as company" checkbox ──────────────────────────────────────── */}
       {store.company && (

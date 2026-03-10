@@ -1,5 +1,5 @@
-import { makeAutoObservable } from 'mobx';
-import type { CompanyData, BillingAddress } from '../types';
+import { makeAutoObservable, runInAction } from 'mobx';
+import type { CompanyData, BillingAddress, RegistrySnapshot, RegistrySnapshotStatus } from '../types';
 
 const emptyBilling = (): BillingAddress => ({
   street: '',
@@ -11,6 +11,10 @@ const emptyBilling = (): BillingAddress => ({
 export class RegistrationStore {
   // ── Step 1 ───────────────────────────────────────────────────────────────
   company: CompanyData | null = null;
+
+  // ── Registry enrichment (non-blocking, fetched after company selection) ──
+  registrySnapshot: RegistrySnapshot | null = null;
+  registrySnapshotStatus: RegistrySnapshotStatus = 'idle';
 
   // ── Step 2 ───────────────────────────────────────────────────────────────
   email: string = '';
@@ -30,12 +34,49 @@ export class RegistrationStore {
   // ── Step 1 actions ────────────────────────────────────────────────────────
   selectCompany(company: CompanyData) {
     this.company = company;
+    this.registrySnapshot = null;
+    this.registrySnapshotStatus = 'idle';
+    // Fire enrichment in the background — non-blocking
+    void this.fetchEnrichment(String(company.regcode));
   }
 
   clearCompany() {
     this.company = null;
+    this.registrySnapshot = null;
+    this.registrySnapshotStatus = 'idle';
     this.billingSameAsCompany = false;
     this.billingAddress = emptyBilling();
+  }
+
+  /**
+   * Fetches officers, UBOs and business activity from our enrichment proxy.
+   * Runs after selectCompany() and must NOT be awaited by the caller.
+   * Uses runInAction for all state mutations after the async boundary.
+   */
+  async fetchEnrichment(regNo: string) {
+    this.registrySnapshotStatus = 'loading';
+    try {
+      const res = await fetch(`/api/enriched/${encodeURIComponent(regNo)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as {
+        status: 'ready' | 'partial' | 'failed';
+        snapshot: RegistrySnapshot;
+      };
+      runInAction(() => {
+        this.registrySnapshot = {
+          ...data.snapshot,
+          // merge in the already-known fields so the snapshot is complete
+          registrationNumber: regNo,
+          companyName:  this.company?.name ?? '',
+          legalAddress: this.company?.address ?? '',
+        };
+        this.registrySnapshotStatus = data.status;
+      });
+    } catch {
+      runInAction(() => {
+        this.registrySnapshotStatus = 'failed';
+      });
+    }
   }
 
   // ── Step 2 actions ────────────────────────────────────────────────────────

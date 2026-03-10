@@ -11,6 +11,11 @@ const PORT = parseInt(process.env['PORT'] ?? '3000', 10);
 const RESOURCE_ID = '25e80bf3-f107-4ab4-89ef-251b5b9374e9';
 const CKAN_BASE = 'https://data.gov.lv/dati/api/action';
 
+// Enrichment dataset resource IDs
+const RES_OFFICERS   = 'e665114a-73c2-4375-9470-55874b4cfa6b'; // officers.csv
+const RES_UBO        = '20a9b26d-d056-4dbb-ae18-9ff23c87bdee'; // beneficial_owners.csv
+const RES_ACTIVITY   = '49bbd751-3fa2-4d78-8c35-ae0e1c5250d6'; // area_of_activity.csv
+
 // Secure HTTP headers (prevents XSS, clickjacking, sniffing attacks)
 app.use(
   helmet({
@@ -98,6 +103,32 @@ interface SearchQuery {
   regcode?: string;
   limit?: string;
   offset?: string;
+}
+
+// ─── Enrichment types ────────────────────────────────────────────────────────
+
+interface OfficerRecord {
+  legal_entity_registration_number: string;
+  name: string;
+  position: string;
+  entity_type?: string;
+}
+
+interface UBORecord {
+  legal_entity_registration_number: string;
+  forename: string;
+  surname: string;
+}
+
+interface ActivityRecord {
+  legal_entity_registration_number: string;
+  area_of_activity: string;
+}
+
+interface CKANEnrichResponse<T> {
+  success: boolean;
+  result: { records: T[] };
+  error?: { message: string };
 }
 
 // ─── Health check ─────────────────────────────────────────────────────────────
@@ -220,6 +251,91 @@ app.post('/api/sql', sqlLimiter, async (req: Request, res: Response) => {
   }
 });
 
+// ─── Enrichment: officers + UBOs + business activity ─────────────────────────
+/**
+ * GET /api/enriched/:regNo
+ * Runs 3 parallel CKAN queries and returns a RegistrySnapshot.
+ * Non-blocking from the client's perspective — the client fires this after
+ * company selection and updates the store when it resolves.
+ *
+ * Status logic:
+ *   all 3 succeed with ≥1 result → "ready"
+ *   mix of success/empty        → "partial"
+ *   all fail / empty            → "failed"
+ */
+app.get('/api/enriched/:regNo', async (req: Request, res: Response) => {
+  const regNo = (req.params['regNo'] ?? '').replace(/\D/g, '').slice(0, 20);
+  if (!regNo) {
+    res.status(400).json({ error: 'Registration number is required.' });
+    return;
+  }
+
+  const headers = { 'User-Agent': 'kts-explorer/1.0', 'Content-Type': 'application/json' };
+  const mkUrl = (resourceId: string) => {
+    const filters = encodeURIComponent(JSON.stringify({ legal_entity_registration_number: regNo }));
+    return `${CKAN_BASE}/datastore_search?resource_id=${resourceId}&filters=${filters}&limit=20`;
+  };
+
+  // Run all 3 in parallel; individual failures don't blow up the whole response
+  const [officersResult, uboResult, activityResult] = await Promise.allSettled([
+    fetch(mkUrl(RES_OFFICERS), { headers }).then(r => r.json() as Promise<CKANEnrichResponse<OfficerRecord>>),
+    fetch(mkUrl(RES_UBO),      { headers }).then(r => r.json() as Promise<CKANEnrichResponse<UBORecord>>),
+    fetch(mkUrl(RES_ACTIVITY), { headers }).then(r => r.json() as Promise<CKANEnrichResponse<ActivityRecord>>),
+  ]);
+
+  // ── Map officers ────────────────────────────────────────────────────────────
+  const officersOk = officersResult.status === 'fulfilled' && officersResult.value.success;
+  const rawOfficers: OfficerRecord[] = officersOk ? officersResult.value.result.records : [];
+
+  const officers = rawOfficers
+    .filter(o => {
+      // Skip rows that are clearly legal-entity entries, not persons
+      const et = (o.entity_type ?? '').toLowerCase();
+      return !et.includes('legal') && !et.includes('jur') && !et.includes('uzn');
+    })
+    .map(o => {
+      const parts = (o.name ?? '').trim().split(/\s+/);
+      if (parts.length < 2) return null;
+      const lastName  = parts.pop()!;
+      const firstName = parts.join(' ');
+      return { firstName, lastName, role: o.position ?? '' };
+    })
+    .filter(Boolean) as Array<{ firstName: string; lastName: string; role: string }>;
+
+  // ── Map UBOs ────────────────────────────────────────────────────────────────
+  const uboOk = uboResult.status === 'fulfilled' && uboResult.value.success;
+  const rawUBOs: UBORecord[] = uboOk ? uboResult.value.result.records : [];
+  const beneficialOwners = rawUBOs
+    .filter(u => u.forename && u.surname)
+    .map(u => ({ firstName: u.forename, lastName: u.surname }));
+
+  // ── Map business activity ────────────────────────────────────────────────────
+  const actOk = activityResult.status === 'fulfilled' && activityResult.value.success;
+  const rawAct: ActivityRecord[] = actOk ? activityResult.value.result.records : [];
+  const businessActivity = rawAct[0]?.area_of_activity ?? '';
+
+  // ── Determine status ────────────────────────────────────────────────────────
+  const successCount = [officersOk, uboOk, actOk].filter(Boolean).length;
+  const hasAnyData   = officers.length > 0 || beneficialOwners.length > 0 || businessActivity;
+  const status =
+    successCount === 3 && hasAnyData ? 'ready'
+    : successCount === 0 || !hasAnyData ? 'failed'
+    : 'partial';
+
+  res.json({
+    status,
+    snapshot: {
+      registrationNumber: regNo,
+      companyName:        '',           // caller already has this from Step 1
+      legalAddress:       '',           // caller already has this from Step 1
+      officers,
+      beneficialOwners,
+      businessActivity,
+      fetchedAt: new Date().toISOString(),
+    },
+  });
+});
+
 // ─── 404 for unknown API routes ───────────────────────────────────────────────
 app.use('/api/*', (_req: Request, res: Response) => {
   res.status(404).json({ error: 'API route not found.' });
@@ -241,6 +357,7 @@ app.listen(PORT, () => {
   console.log(`\n🚀  Server running at http://localhost:${PORT}\n`);
   console.log(`   GET  /api/search?q=<name>&limit=10`);
   console.log(`   GET  /api/search?regcode=<code>`);
+  console.log(`   GET  /api/enriched/:regNo`);
   console.log(`   POST /api/sql  { sql: "SELECT ..." }`);
   console.log(`   GET  /api/health\n`);
 });

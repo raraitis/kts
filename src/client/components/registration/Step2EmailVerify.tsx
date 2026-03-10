@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Mail, Building2, ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { Mail, Building2, ChevronRight, ChevronLeft, CheckCircle2, Loader } from 'lucide-react';
 import { useRegistrationStore } from '../../stores/StoreContext';
 
 /**
@@ -36,14 +36,28 @@ const Step2EmailVerify = observer(() => {
 
   return (
     <div className="space-y-5">
-      {/* Company summary — data comes straight from the store, no re-fetch */}
+      {/* Company summary + enrichment status */}
       {store.company && (
         <div className="flex items-start gap-2 p-3 rounded-lg border border-[#30363d] bg-[#0d1117]">
           <Building2 size={13} className="text-[#58a6ff] mt-0.5 shrink-0" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-[#e6edf3] truncate">{store.company.name}</p>
             <p className="text-[11px] text-[#8b949e]">Reg. {store.company.regcode}</p>
           </div>
+          {/* Non-blocking enrichment status badge */}
+          {store.registrySnapshotStatus === 'loading' && (
+            <span className="ml-auto flex items-center gap-1 text-[10px] text-[#8b949e] shrink-0">
+              <Loader size={10} className="animate-spin" /> Loading company data…
+            </span>
+          )}
+          {store.registrySnapshotStatus === 'ready' && (
+            <span className="ml-auto flex items-center gap-1 text-[10px] text-[#3fb950] shrink-0">
+              <CheckCircle2 size={10} /> Data ready
+            </span>
+          )}
+          {store.registrySnapshotStatus === 'partial' && (
+            <span className="ml-auto text-[10px] text-[#d29922] shrink-0">Partial data</span>
+          )}
         </div>
       )}
 
