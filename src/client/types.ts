@@ -52,6 +52,16 @@ export type Page = 'tool' | 'docs';
 
 export type EndpointKey = 'search-q' | 'search-reg' | 'sql';
 
+/** Alias used by the registration MobX store */
+export type CompanyData = Company;
+
+export interface BillingAddress {
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+}
+
 export interface MirrorState {
   mode: 'name' | 'regcode';
   query: string;
