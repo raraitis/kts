@@ -108,9 +108,11 @@ interface SearchQuery {
 // ─── Enrichment types ────────────────────────────────────────────────────────
 
 interface OfficerRecord {
+  at_legal_entity_registration_number: number;
   legal_entity_registration_number: string;
   name: string;
   position: string;
+  governing_body: string;
   entity_type?: string;
 }
 
@@ -271,16 +273,17 @@ app.get('/api/enriched/:regNo', async (req: Request, res: Response) => {
   }
 
   const headers = { 'User-Agent': 'kts-explorer/1.0', 'Content-Type': 'application/json' };
-  const mkUrl = (resourceId: string) => {
-    const filters = encodeURIComponent(JSON.stringify({ legal_entity_registration_number: regNo }));
+  const regNoNum = parseInt(regNo, 10);
+  const mkUrl = (resourceId: string, filterKey: string) => {
+    const filters = encodeURIComponent(JSON.stringify({ [filterKey]: regNoNum }));
     return `${CKAN_BASE}/datastore_search?resource_id=${resourceId}&filters=${filters}&limit=20`;
   };
 
   // Run all 3 in parallel; individual failures don't blow up the whole response
   const [officersResult, uboResult, activityResult] = await Promise.allSettled([
-    fetch(mkUrl(RES_OFFICERS), { headers }).then(r => r.json() as Promise<CKANEnrichResponse<OfficerRecord>>),
-    fetch(mkUrl(RES_UBO),      { headers }).then(r => r.json() as Promise<CKANEnrichResponse<UBORecord>>),
-    fetch(mkUrl(RES_ACTIVITY), { headers }).then(r => r.json() as Promise<CKANEnrichResponse<ActivityRecord>>),
+    fetch(mkUrl(RES_OFFICERS, 'at_legal_entity_registration_number'), { headers }).then(r => r.json() as Promise<CKANEnrichResponse<OfficerRecord>>),
+    fetch(mkUrl(RES_UBO,      'legal_entity_registration_number'),    { headers }).then(r => r.json() as Promise<CKANEnrichResponse<UBORecord>>),
+    fetch(mkUrl(RES_ACTIVITY, 'legal_entity_registration_number'),    { headers }).then(r => r.json() as Promise<CKANEnrichResponse<ActivityRecord>>),
   ]);
 
   // ── Map officers ────────────────────────────────────────────────────────────
@@ -289,16 +292,17 @@ app.get('/api/enriched/:regNo', async (req: Request, res: Response) => {
 
   const officers = rawOfficers
     .filter(o => {
-      // Skip rows that are clearly legal-entity entries, not persons
-      const et = (o.entity_type ?? '').toLowerCase();
-      return !et.includes('legal') && !et.includes('jur') && !et.includes('uzn');
+      // Keep only natural persons (skip legal-entity officer rows)
+      const et = (o.entity_type ?? '').toUpperCase();
+      return et === 'NATURAL_PERSON' || et === '';
     })
     .map(o => {
       const parts = (o.name ?? '').trim().split(/\s+/);
       if (parts.length < 2) return null;
       const lastName  = parts.pop()!;
       const firstName = parts.join(' ');
-      return { firstName, lastName, role: o.position ?? '' };
+      const role = o.position || o.governing_body || '';
+      return { firstName, lastName, role };
     })
     .filter(Boolean) as Array<{ firstName: string; lastName: string; role: string }>;
 
